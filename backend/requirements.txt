@@ -8,3 +8,6 @@ openai
 beautifulsoup4
 requests
 supabase
+pytest
+ruff
+
