@@ -10,16 +10,30 @@ from databutton_app.mw.auth_mw import AuthConfig, get_authorized_user
 
 
 def get_router_config() -> dict:
+    """Return the router configuration or an empty dict if not found."""
+    config_path = pathlib.Path("routers.json")
+
+    if not config_path.exists():
+        # Missing config is not fatal; just return an empty configuration
+        return {}
+
     try:
-        # Note: This file is not available to the agent
-        cfg = json.loads(open("routers.json").read())
-    except:
+        with config_path.open() as f:
+            return json.load(f)
+    except json.JSONDecodeError as exc:
+        raise ValueError(f"Invalid router configuration: {exc}") from exc
+
+
+def is_auth_disabled(router_config: dict | None, name: str) -> bool:
+    """Return ``True`` if auth is disabled for the given router."""
+    if not isinstance(router_config, dict):
         return False
-    return cfg
 
-
-def is_auth_disabled(router_config: dict, name: str) -> bool:
-    return router_config["routers"][name]["disableAuth"]
+    return (
+        router_config.get("routers", {})
+        .get(name, {})
+        .get("disableAuth", False)
+    )
 
 
 def import_api_routers() -> APIRouter:
