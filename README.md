@@ -27,3 +27,7 @@ make run-frontend
 The backend server runs on port 8000 and the frontend development server runs on port 5173. The frontend Vite server proxies API requests to the backend on port 8000.
 
 Visit <http://localhost:5173> to view the application.
+
+## License
+
+This project is licensed under the [MIT License](LICENSE).
