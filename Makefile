@@ -16,4 +16,8 @@ run-backend:
 run-frontend:
 	cd frontend && ./run.sh
 
+.PHONY: test
+test:
+	pytest
+
 .DEFAULT_GOAL := install
