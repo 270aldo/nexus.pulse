@@ -2,6 +2,7 @@ import React from 'react';
 import StyledContentBox from "./StyledContentBox";
 import { CalendarDays, Brain as BrainIconLucide, Dumbbell, Link as LinkIcon, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { log } from '../utils/logger';
 
 interface Activity {
   id: string;
@@ -35,7 +36,7 @@ const NextActivitiesSection: React.FC<Props> = ({ nextActivities, isLoadingNextA
       // Default navigation or action if no specific link
       // For example, navigate to a generic activity details page
       // navigate(`/activity/${activity.id}`);
-      console.log("Clicked activity:", activity.title);
+      log("Clicked activity:", activity.title);
     }
   };
 

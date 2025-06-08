@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { supabase } from './supabaseClient'; // Asegúrate que la ruta sea correcta
+import { log } from './logger';
 import type { Session, User } from '@supabase/supabase-js';
 
 interface AuthState {
@@ -65,7 +66,7 @@ const useAuthStore = create<AuthState>((set, get) => ({
 // Esto se ejecuta una vez cuando el store se importa por primera vez.
 supabase.auth.onAuthStateChange((event, session) => {
   const store = useAuthStore.getState();
-  console.log('Supabase auth state change:', event, session);
+  log('Supabase auth state change:', event, session);
   store.setSession(session);
   store.setLoading(false); // Asegurarse de que loading sea false después del cambio
 });
