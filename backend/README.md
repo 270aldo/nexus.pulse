@@ -20,7 +20,7 @@ The API expects a few environment variables or secrets to be available:
 - `DATABUTTON_SERVICE_TYPE` – when set to `prodx` the application runs in production mode; otherwise development mode is assumed.
 - `DATABUTTON_EXTENSIONS` – optional JSON string describing Databutton extensions. If it contains the `firebase-auth` extension, authentication is configured automatically.
 
-Create a `.env` file with these values when running locally. `main.py` loads this file via `dotenv` on startup.
+Copy `.env.example` to `.env` and fill in the values when running locally. `main.py` loads this file via `dotenv` on startup.
 
 Example:
 
