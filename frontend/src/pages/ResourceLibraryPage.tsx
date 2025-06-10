@@ -96,6 +96,33 @@ const ResourceLibraryPage: React.FC = () => {
           Curated knowledge to empower your health and performance journey.
         </p>
       </header>
+      <div className="lg:grid lg:grid-cols-4 lg:gap-8">
+        <aside className="hidden lg:block lg:col-span-1">
+          <div className="sticky top-20 space-y-2">
+            <h2 className="text-lg font-semibold text-white mb-2">Categories</h2>
+            <ul className="space-y-1">
+              <li>
+                <button
+                  onClick={() => setSelectedCategory('All Categories')}
+                  className={`w-full text-left px-3 py-2 rounded-md ${selectedCategory === 'All Categories' ? 'bg-indigo-700 text-white' : 'text-gray-300 hover:bg-gray-700'}`}
+                >
+                  All Categories
+                </button>
+              </li>
+              {categories.map(cat => (
+                <li key={cat.id}>
+                  <button
+                    onClick={() => setSelectedCategory(cat.name)}
+                    className={`w-full text-left px-3 py-2 rounded-md ${selectedCategory === cat.name ? 'bg-indigo-700 text-white' : 'text-gray-300 hover:bg-gray-700'}`}
+                  >
+                    {cat.name}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </aside>
+        <main className="lg:col-span-3">
 
       {/* Filters Section */}
       <div className="mb-8 p-6 bg-gray-800/70 backdrop-blur-sm border border-gray-700/60 rounded-xl shadow-xl">
@@ -221,6 +248,8 @@ const ResourceLibraryPage: React.FC = () => {
           ))}
         </div>
       )}
+        </main>
+      </div>
     </div>
   );
 };
