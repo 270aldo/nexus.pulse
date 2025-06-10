@@ -97,76 +97,43 @@ const ChatPage: React.FC = () => {
     };
     setMessages((prev) => [...prev, newUserMessageForUI]);
     setCurrentMessage("");
-    
-    const { data: savedUserMessage, error: userMessageError } = await supabase
-      .from("chat_messages")
-      .insert({ user_id: userId, sender: "user", text_content: userMessageText })
-      .select("id, created_at")
-      .single();
 
-    if (userMessageError || !savedUserMessage) {
-      console.error("Error saving user message:", userMessageError);
-      toast.error("Error al enviar tu mensaje. Intenta de nuevo.");
-      setMessages((prev) => prev.filter(msg => msg.id !== tempUserMessageId));
-      setCurrentMessage(userMessageText); // Restore input
-      setIsProcessing(false);
-      return;
-    }
-    // Update message with DB id and timestamp
-    setMessages((prev) => prev.map(msg => 
-        msg.id === tempUserMessageId 
-        ? { ...msg, id: savedUserMessage.id, timestamp: new Date(savedUserMessage.created_at) } 
-        : msg
-    ));
-
-    // Simulate AI responses and save them
-    const simulateAndSaveAiResponse = async (text: string, delay: number) => {
-      return new Promise<void>(resolve => {
-        setTimeout(async () => {
-          const tempAiMessageId = `ai-local-${Date.now()}`;
-          const newAiMessageForUI: Message = {
-            id: tempAiMessageId,
-            sender: "ai",
-            text: text,
-            timestamp: new Date(),
-          };
-          setMessages((prev) => [...prev, newAiMessageForUI]);
-
-          const { data: savedAiMessage, error: aiMessageError } = await supabase
-            .from("chat_messages")
-            .insert({ user_id: userId, sender: "ai", text_content: text })
-            .select("id, created_at")
-            .single();
-
-          if (aiMessageError || !savedAiMessage) {
-            console.error("Error saving AI message:", aiMessageError);
-            toast.error("Error en la respuesta de la IA.");
-            setMessages((prev) => prev.filter(msg => msg.id !== tempAiMessageId));
-          } else {
-            setMessages((prev) => prev.map(msg => 
-              msg.id === tempAiMessageId 
-              ? { ...msg, id: savedAiMessage.id, timestamp: new Date(savedAiMessage.created_at) } 
-              : msg
-            ));
-          }
-          resolve();
-        }, delay);
+    try {
+      const response = await fetch("/routes/chat", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ user_id: userId, message: userMessageText }),
       });
-    };
 
-    await simulateAndSaveAiResponse(`Entendido. Procesando: "${userMessageText.substring(0,20)}${userMessageText.length > 20 ? "..." : ""}"`, 1000);
-    // Ejemplo de cómo podrías simular acceso a datos del usuario (estos serían datos reales o de un mock más complejo)
-    const simulatedSleepHours = Math.floor(Math.random() * 3) + 6; // Simula entre 6-8 horas
-    const simulatedWorkoutLogged = Math.random() < 0.5; // Simula 50% probabilidad de haber logueado entrenamiento
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
 
-    await simulateAndSaveAiResponse(`He revisado tus datos. Tu último registro de sueño fue de ${simulatedSleepHours} horas. ¿Cómo te sientes hoy con ese descanso?`, 1500);
-    
-    if (!simulatedWorkoutLogged) {
-      await simulateAndSaveAiResponse("Aún no veo tu registro de entrenamiento de ayer. ¿Pudiste completarlo o necesitas ayuda para registrarlo?", 1200);
-    } else {
-      await simulateAndSaveAiResponse("¡Excelente que hayas registrado tu entrenamiento de ayer! La consistencia es clave.", 1200);
+      const data = await response.json();
+
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.id === tempUserMessageId
+            ? { ...msg, id: data.user_message.id, timestamp: new Date(data.user_message.created_at) }
+            : msg
+        )
+      );
+
+      const aiMessage: Message = {
+        id: data.ai_message.id,
+        sender: "ai",
+        text: data.ai_message.text_content,
+        timestamp: new Date(data.ai_message.created_at),
+      };
+      setMessages((prev) => [...prev, aiMessage]);
+    } catch (err) {
+      console.error("Error sending message:", err);
+      toast.error("Error al enviar tu mensaje. Intenta de nuevo.");
+      setMessages((prev) => prev.filter((msg) => msg.id !== tempUserMessageId));
+      setCurrentMessage(userMessageText);
     }
-    await simulateAndSaveAiResponse("Recuerda que mantener una buena hidratación es clave. ¿Has registrado tu ingesta de agua hoy?", 1800);
 
     setIsProcessing(false);
   };
