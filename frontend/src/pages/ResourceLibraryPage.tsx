@@ -40,6 +40,9 @@ const ResourceLibraryPage: React.FC = () => {
   // Selected filters - to be used later
   const [selectedCategory, setSelectedCategory] = useState<string>("All Categories");
   const [selectedProgramTag, setSelectedProgramTag] = useState<string>("All Programs");
+  const [searchTerm, setSearchTerm] = useState<string>("");
+  const [minDuration, setMinDuration] = useState<string>("");
+  const [maxDuration, setMaxDuration] = useState<string>("");
 
   const navigate = useNavigate(); // Initialize useNavigate
 
@@ -78,12 +81,24 @@ const ResourceLibraryPage: React.FC = () => {
     loadContent();
   }, []);
 
-  // Placeholder for actual filtering logic
   const filteredContentItems = contentItems.filter(item => {
     const categoryMatch = selectedCategory === "All Categories" || item.category_name === selectedCategory;
-    const programTagMatch = selectedProgramTag === "All Programs" || item.tag_names.includes(selectedProgramTag === "NGX PRIME" ? "PRIME" : selectedProgramTag === "NGX LONGEVITY" ? "LONGEVITY" : selectedProgramTag);
-    // Add more tag filtering logic here if needed
-    return categoryMatch && programTagMatch;
+    const programTagMatch = selectedProgramTag === "All Programs" || item.tag_names.includes(
+      selectedProgramTag === "NGX PRIME" ? "PRIME" : selectedProgramTag === "NGX LONGEVITY" ? "LONGEVITY" : selectedProgramTag
+    );
+
+    const searchMatch = searchTerm.trim() === "" ||
+      item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (item.summary ? item.summary.toLowerCase().includes(searchTerm.toLowerCase()) : false);
+
+    const duration = item.duration_minutes ?? null;
+    let durationMatch = true;
+    if (duration !== null) {
+      if (minDuration) durationMatch = durationMatch && duration >= parseInt(minDuration, 10);
+      if (maxDuration) durationMatch = durationMatch && duration <= parseInt(maxDuration, 10);
+    }
+
+    return categoryMatch && programTagMatch && searchMatch && durationMatch;
   });
 
   return (
@@ -100,7 +115,7 @@ const ResourceLibraryPage: React.FC = () => {
       {/* Filters Section */}
       <div className="mb-8 p-6 bg-gray-800/70 backdrop-blur-sm border border-gray-700/60 rounded-xl shadow-xl">
         <h2 className="text-xl font-semibold text-white mb-4">Filter Content</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 items-end">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 items-end">
           <div>
             <label htmlFor="category-filter" className="block text-sm font-medium text-gray-300 mb-1.5">
               Category
@@ -129,12 +144,53 @@ const ResourceLibraryPage: React.FC = () => {
             >
               <option value="All Programs">All Programs</option>
               {/* Manually adding PRIME and LONGEVITY as they are key program tags */}
-              <option value="PRIME">NGX PRIME</option> 
+              <option value="PRIME">NGX PRIME</option>
               <option value="LONGEVITY">NGX LONGEVITY</option>
               {/* You could also dynamically populate other tags if needed */}
             </select>
           </div>
-          {/* <Button className="bg-indigo-600 hover:bg-indigo-700 text-white h-10"> 
+          <div>
+            <label htmlFor="search" className="block text-sm font-medium text-gray-300 mb-1.5">
+              Search
+            </label>
+            <input
+              id="search"
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Search titles or summaries"
+              className="block w-full rounded-md border-gray-600 bg-gray-700 text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2.5 h-10"
+            />
+          </div>
+          <div className="flex gap-2">
+            <div className="flex-1">
+              <label htmlFor="min-duration" className="block text-sm font-medium text-gray-300 mb-1.5">
+                Min Duration
+              </label>
+              <input
+                id="min-duration"
+                type="number"
+                value={minDuration}
+                onChange={(e) => setMinDuration(e.target.value)}
+                placeholder="min"
+                className="block w-full rounded-md border-gray-600 bg-gray-700 text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2.5 h-10"
+              />
+            </div>
+            <div className="flex-1">
+              <label htmlFor="max-duration" className="block text-sm font-medium text-gray-300 mb-1.5">
+                Max Duration
+              </label>
+              <input
+                id="max-duration"
+                type="number"
+                value={maxDuration}
+                onChange={(e) => setMaxDuration(e.target.value)}
+                placeholder="max"
+                className="block w-full rounded-md border-gray-600 bg-gray-700 text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2.5 h-10"
+              />
+            </div>
+          </div>
+          {/* <Button className="bg-indigo-600 hover:bg-indigo-700 text-white h-10">
             Apply Filters // Filtering is now real-time on select change
           </Button> */}
         </div>
