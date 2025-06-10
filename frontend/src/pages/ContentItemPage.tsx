@@ -4,8 +4,10 @@ import { useSearchParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft } from "lucide-react"; // Replaced Heroicons
-import { fetchContentItemById, fetchContentCategories } from "../utils/supabaseClient"; 
+import { ArrowLeftIcon } from "@radix-ui/react-icons";
+import { fetchContentItemById, fetchContentCategories, fetchRelatedContentItems } from "../utils/supabaseClient";
 
 // Interface for the detailed content item
 interface DetailedContentItem {
@@ -31,6 +33,19 @@ interface ContentCategory {
   description?: string; // Optional
 }
 
+interface RelatedContentItem {
+  id: string;
+  title: string;
+  summary: string | null;
+  content_type: string;
+  thumbnail_url?: string | null;
+  estimated_read_time_minutes?: number | null;
+  duration_minutes?: number | null;
+  category_id: string | null;
+  category_name?: string;
+  tag_names: string[];
+}
+
 const ContentItemPage: React.FC = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -39,6 +54,9 @@ const ContentItemPage: React.FC = () => {
   const [contentItem, setContentItem] = useState<DetailedContentItem | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [categories, setCategories] = useState<ContentCategory[]>([]);
+  const [relatedItems, setRelatedItems] = useState<RelatedContentItem[]>([]);
+  const [isRelatedLoading, setIsRelatedLoading] = useState<boolean>(false);
 
   useEffect(() => {
     if (!itemId) {
@@ -55,19 +73,21 @@ const ContentItemPage: React.FC = () => {
         if (!itemData) {
           setError("Content item not found.");
           setContentItem(null);
-          setIsLoading(false); // Ensure loading stops if item not found
+          setIsLoading(false);
           return;
         }
 
+        const fetchedCategories = await fetchContentCategories();
+        setCategories(fetchedCategories as ContentCategory[]);
+
         let categoryName = "Uncategorized";
         if (itemData.category_id) {
-          const categories = await fetchContentCategories();
-          const category = categories.find((cat: ContentCategory) => cat.id === itemData.category_id);
+          const category = fetchedCategories.find((cat: ContentCategory) => cat.id === itemData.category_id);
           if (category) {
             categoryName = category.name;
           }
         }
-        
+
         setContentItem({ ...itemData, category_name: categoryName } as DetailedContentItem);
 
       } catch (err) {
@@ -81,6 +101,27 @@ const ContentItemPage: React.FC = () => {
 
     loadContentItem();
   }, [itemId]);
+
+  useEffect(() => {
+    const loadRelated = async () => {
+      if (!contentItem) return;
+      setIsRelatedLoading(true);
+      try {
+        const items = await fetchRelatedContentItems(contentItem.category_id, contentItem.id);
+        const mapped = items.map(item => ({
+          ...item,
+          category_name: categories.find(cat => cat.id === item.category_id)?.name || 'Uncategorized'
+        })) as RelatedContentItem[];
+        setRelatedItems(mapped);
+      } catch (err) {
+        console.error('Error loading related content:', err);
+      } finally {
+        setIsRelatedLoading(false);
+      }
+    };
+
+    loadRelated();
+  }, [contentItem, categories]);
 
   const renderContentBody = () => {
     if (!contentItem || !contentItem.content_body) return null;
@@ -227,12 +268,12 @@ const ContentItemPage: React.FC = () => {
           ? renderVideoPlayer() 
           : renderContentBody()}
         
-        {contentItem.external_url && 
-         !contentItem.content_type.toLowerCase().includes("video") && 
+        {contentItem.external_url &&
+         !contentItem.content_type.toLowerCase().includes("video") &&
          contentItem.external_url !== contentItem.content_body && // Don't show if body is just the URL
           <div className="mt-10 pt-6 border-t border-gray-700/50">
-            <Button 
-                onClick={() => window.open(contentItem.external_url ?? '', '_blank')} 
+            <Button
+                onClick={() => window.open(contentItem.external_url ?? '', '_blank')}
                 className="bg-indigo-600 hover:bg-indigo-500 text-white transition-colors duration-150 text-base font-semibold py-3 px-6 rounded-lg shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-75"
             >
                 View Full External Resource
@@ -240,6 +281,58 @@ const ContentItemPage: React.FC = () => {
           </div>}
 
       </article>
+
+      {isRelatedLoading && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-12">
+          {[...Array(3)].map((_, index) => (
+            <Card key={index} className="bg-gray-800 border-gray-700 text-white flex flex-col">
+              <CardHeader>
+                <Skeleton className="h-6 w-3/4 bg-gray-700" />
+                <Skeleton className="h-4 w-1/2 bg-gray-700 mt-2" />
+              </CardHeader>
+              <CardContent className="flex-grow">
+                <Skeleton className="h-4 w-full bg-gray-700 mb-2" />
+                <Skeleton className="h-4 w-5/6 bg-gray-700 mb-3" />
+              </CardContent>
+              <div className="p-6 pt-0">
+                <Skeleton className="h-10 w-full bg-indigo-700/50" />
+              </div>
+            </Card>
+          ))}
+        </div>
+      )}
+
+      {!isRelatedLoading && relatedItems.length > 0 && (
+        <section className="mt-12">
+          <h2 className="text-2xl font-bold text-indigo-300 mb-6">Related Resources</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {relatedItems.map(item => (
+              <Card key={item.id} className="bg-gray-800 border-gray-700 text-white flex flex-col justify-between hover:border-indigo-500/70 transition-colors duration-200 shadow-lg hover:shadow-indigo-500/10">
+                <CardHeader>
+                  <CardTitle className="text-lg font-semibold text-indigo-400 group-hover:text-indigo-300 transition-colors">
+                    {item.title}
+                  </CardTitle>
+                  <CardDescription className="text-gray-400 text-sm">
+                    {item.category_name} - {item.content_type}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="flex-grow">
+                  {item.thumbnail_url && (
+                    <img src={item.thumbnail_url} alt={item.title} className="rounded-md mb-3 w-full h-32 object-cover" />
+                  )}
+                  <p className="text-gray-300 mb-3 text-sm leading-relaxed line-clamp-3">{item.summary || "No summary available."}</p>
+                </CardContent>
+                <div className="p-6 pt-0">
+                  <Button className="w-full bg-indigo-600 hover:bg-indigo-700 text-white" onClick={() => navigate(`/content-item-page?id=${item.id}`)}>
+                    View Content
+                  </Button>
+                </div>
+              </Card>
+            ))}
+          </div>
+        </section>
+      )}
+
     </div>
   );
 };

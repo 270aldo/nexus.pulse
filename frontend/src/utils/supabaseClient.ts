@@ -345,3 +345,44 @@ export const fetchContentItems = async () => {
   }));
 };
 
+// Fetch related content items based on category, excluding the current item
+export const fetchRelatedContentItems = async (
+  categoryId: string | null,
+  excludeId: string,
+  limit = 3
+) => {
+  if (!categoryId) {
+    return [];
+  }
+
+  const { data, error } = await supabase
+    .from('content_items')
+    .select(`
+      id,
+      title,
+      content_type,
+      summary,
+      thumbnail_url,
+      category_id,
+      estimated_read_time_minutes,
+      duration_minutes,
+      tags:content_item_tags!inner(tag:content_tags!inner(id, name))
+    `)
+    .eq('category_id', categoryId)
+    .neq('id', excludeId)
+    .order('published_at', { ascending: false })
+    .limit(limit);
+
+  if (error) {
+    console.error('Error fetching related content items:', error);
+    return [];
+  }
+
+  return (
+    data?.map(item => ({
+      ...item,
+      tag_names: item.tags ? item.tags.map((t: any) => t.tag?.name).filter(Boolean) : []
+    })) || []
+  );
+};
+
