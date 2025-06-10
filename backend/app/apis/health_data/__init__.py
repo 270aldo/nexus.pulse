@@ -7,14 +7,19 @@ from fastapi import APIRouter, Depends, HTTPException, Header, Request, status
 from pydantic import BaseModel, Field, HttpUrl
 from supabase import create_client, Client
 import databutton as db
+import logging
 
 # Attempt to import Supabase/GoTrue specific error
 try:
     from gotrue.errors import GoTrueApiError
-    print("[AUTH DEBUG] Successfully imported GoTrueApiError.")
+    logging.getLogger(__name__).debug("Successfully imported GoTrueApiError.")
 except ImportError:
-    GoTrueApiError = None # Fallback if not found
-    print("[AUTH DEBUG] Could not import GoTrueApiError directly, using generic Exception for Supabase API errors.")
+    GoTrueApiError = None  # Fallback if not found
+    logging.getLogger(__name__).debug(
+        "Could not import GoTrueApiError directly, using generic Exception for Supabase API errors."
+    )
+
+logger = logging.getLogger(__name__)
 
 
 # --- Pydantic Models ---
@@ -68,57 +73,57 @@ class SyncResponse(BaseModel):
 
 # --- FastAPI Authentication Dependency ---
 async def get_current_user_data(request: Request, authorization: Optional[str] = Header(None)) -> Dict[str, Any]:
-    print("--- [AUTH DEBUG] get_current_user_data INVOKED (Restored Logic) ---")
-    print(f"[AUTH DEBUG] Attempting to get Supabase client...")
+    logger.debug("get_current_user_data invoked")
+    logger.debug("Attempting to get Supabase client")
     supabase_url = db.secrets.get("SUPABASE_URL")
     supabase_anon_key = db.secrets.get("SUPABASE_ANON_KEY")
 
     if not supabase_url or not supabase_anon_key:
-        print("[AUTH DEBUG] Supabase URL or Anon Key is missing from secrets.")
+        logger.error("Supabase URL or Anon Key is missing from secrets")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Supabase configuration missing",
         )
-    print(f"[AUTH DEBUG] Supabase URL used: {supabase_url}")
+    logger.debug("Supabase client URL configured")
 
     try:
-        print(f"[AUTH DEBUG] Initializing Supabase client with URL: {supabase_url}")
+        logger.debug("Initializing Supabase client")
         supabase: Client = create_client(supabase_url, supabase_anon_key)
-        print("[AUTH DEBUG] Supabase client initialized.")
+        logger.debug("Supabase client initialized")
     except Exception as e:
-        print(f"[AUTH DEBUG] Error initializing Supabase client: {e}")
+        logger.error("Error initializing Supabase client: %s", e)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error initializing Supabase client: {e}",
         ) from e
 
     if not authorization:
-        print("[AUTH DEBUG] Authorization header missing from request.")
+        logger.warning("Authorization header missing from request")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Authorization header missing",
         )
-    print(f"[AUTH DEBUG] Authorization header received: {authorization[:30]}...") # Log first 30 chars
+    logger.debug("Authorization header received")
 
     scheme, _, token_value = authorization.partition(" ")
     if scheme.lower() != "bearer" or not token_value:
-        print(f"[AUTH DEBUG] Invalid authorization scheme or token missing. Scheme: {scheme}")
+        logger.warning("Invalid authorization scheme or token missing. Scheme: %s", scheme)
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid authorization scheme or token missing",
         )
-    print(f"[AUTH DEBUG] Token received (Bearer): {token_value[:20]}...")
+    logger.debug("Bearer token received")
 
     try:
-        print(f"[AUTH DEBUG] Attempting to get user with token: {token_value[:20]}...")
+        logger.debug("Attempting to get user with provided token")
         user_response = supabase.auth.get_user(jwt=token_value)
-        print(f"[AUTH DEBUG] Supabase get_user response: {user_response}")
+        logger.debug("Supabase get_user response received")
         
         if user_response and user_response.user:
-            print(f"[AUTH DEBUG] User successfully authenticated: {user_response.user.id}")
+            logger.debug("User successfully authenticated: %s", user_response.user.id)
             return user_response.user.model_dump() # FastAPI will convert this to dict
         else:
-            print("[AUTH DEBUG] User not found or invalid token based on Supabase response.")
+            logger.warning("User not found or invalid token based on Supabase response")
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED, detail="No access for you. (User not found/invalid token)"
             )
@@ -127,13 +132,21 @@ async def get_current_user_data(request: Request, authorization: Optional[str] =
         if hasattr(e_gotrue, 'message') and e_gotrue.message: 
             error_message = e_gotrue.message
         status_code_from_error = e_gotrue.status if hasattr(e_gotrue, 'status') else 401
-        print(f"[AUTH DEBUG] GoTrueApiError: Status {status_code_from_error} - Message: {error_message}")
+        logger.error(
+            "GoTrueApiError: Status %s - Message: %s",
+            status_code_from_error,
+            error_message,
+        )
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, 
             detail=f"No access for you. (Auth Error: {error_message})"
         ) from e_gotrue
     except Exception as e_generic: # Generic catch for other errors
-        print(f"[AUTH DEBUG] Unexpected error during token validation: {type(e_generic).__name__} - {e_generic}")
+        logger.exception(
+            "Unexpected error during token validation: %s - %s",
+            type(e_generic).__name__,
+            e_generic,
+        )
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, 
             detail=f"No access for you. (Unexpected Error: {type(e_generic).__name__})"
@@ -150,19 +163,19 @@ async def sync_health_kit_data(
 ):
     user_id = current_user.get("id") 
     if not user_id:
-        print("[SYNC ERROR] User ID not found in token after auth dependency.")
+        logger.error("User ID not found in token after auth dependency")
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="User ID not available")
 
-    print(f"[SYNC INFO] Starting HealthKit data sync for user_id: {user_id}")
+    logger.info("Starting HealthKit data sync for user_id: %s", user_id)
 
     supabase_url_db = db.secrets.get("SUPABASE_URL")
     supabase_key_db = db.secrets.get("SUPABASE_ANON_KEY") 
     if not supabase_url_db or not supabase_key_db:
-        print("[SYNC ERROR] Supabase config missing for DB operations.")
+        logger.error("Supabase config missing for DB operations")
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Supabase config missing for DB operations")
     
     supabase_client_db: Client = create_client(supabase_url_db, supabase_key_db)
-    print(f"[SYNC INFO] Supabase client for DB operations initialized with URL: {supabase_url_db}")
+    logger.debug("Supabase client for DB operations initialized")
 
     imported_counts = {
         "quantity": 0,
@@ -181,13 +194,20 @@ async def sync_health_kit_data(
         
         if quantity_data_to_upsert:
             try:
-                print(f"[SYNC DEBUG] Upserting {len(quantity_data_to_upsert)} quantity samples for user {user_id}.")
+                logger.debug(
+                    "Upserting %d quantity samples for user %s",
+                    len(quantity_data_to_upsert),
+                    user_id,
+                )
                 res = supabase_client_db.table("health_kit_quantity_samples").upsert(quantity_data_to_upsert, on_conflict="external_uuid").execute()
-                print(f"[SYNC DEBUG] Quantity upsert response: {res.data[:1] if res.data else 'No data returned'}") # Log only a part
+                logger.debug(
+                    "Quantity upsert response: %s",
+                    res.data[:1] if res.data else "No data returned",
+                )
                 if res.data:
                     imported_counts["quantity"] = len(res.data)
             except Exception as e:
-                print(f"[SYNC ERROR] Error upserting quantity samples: {e}")
+                logger.error("Error upserting quantity samples: %s", e)
     
     # Upsert Category Samples
     if request_data.category_samples:
@@ -200,12 +220,16 @@ async def sync_health_kit_data(
         
         if category_data_to_upsert:
             try:
-                print(f"[SYNC DEBUG] Upserting {len(category_data_to_upsert)} category samples for user {user_id}.")
+                logger.debug(
+                    "Upserting %d category samples for user %s",
+                    len(category_data_to_upsert),
+                    user_id,
+                )
                 res = supabase_client_db.table("health_kit_category_samples").upsert(category_data_to_upsert, on_conflict="external_uuid").execute()
                 if res.data:
                     imported_counts["category"] = len(res.data)
             except Exception as e:
-                print(f"[SYNC ERROR] Error upserting category samples: {e}")
+                logger.error("Error upserting category samples: %s", e)
 
     # Upsert Workouts
     if request_data.workouts:
@@ -221,14 +245,22 @@ async def sync_health_kit_data(
         
         if workout_data_to_upsert:
             try:
-                print(f"[SYNC DEBUG] Upserting {len(workout_data_to_upsert)} workouts for user {user_id}.")
+                logger.debug(
+                    "Upserting %d workouts for user %s",
+                    len(workout_data_to_upsert),
+                    user_id,
+                )
                 res = supabase_client_db.table("health_kit_workouts").upsert(workout_data_to_upsert, on_conflict="external_uuid").execute()
                 if res.data:
                     imported_counts["workout"] = len(res.data)
             except Exception as e:
-                print(f"[SYNC ERROR] Error upserting workouts: {e}")
+                logger.error("Error upserting workouts: %s", e)
 
-    print(f"[SYNC INFO] Sync completed for user {user_id}. Imported counts: {imported_counts}")
+    logger.info(
+        "Sync completed for user %s. Imported counts: %s",
+        user_id,
+        imported_counts,
+    )
     return SyncResponse(
         message="HealthKit data sync completed.",
         quantity_samples_imported=imported_counts["quantity"],
