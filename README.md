@@ -15,7 +15,13 @@ This project consists of a FastAPI backend server and a React + TypeScript front
 make
 ```
 
-2. Start the backend and frontend servers in separate terminals:
+2. Copy the backend environment template and edit the values:
+
+```bash
+cp backend/.env.example backend/.env
+```
+
+3. Start the backend and frontend servers in separate terminals:
 
 ```bash
 make run-backend
