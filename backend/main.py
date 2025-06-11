@@ -1,10 +1,18 @@
 import os
 import pathlib
 import json
+import logging
 import dotenv
 from fastapi import FastAPI, APIRouter, Depends
 
 dotenv.load_dotenv()
+
+LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO").upper()
+logging.basicConfig(
+    level=getattr(logging, LOG_LEVEL, logging.INFO),
+    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+)
+logger = logging.getLogger(__name__)
 
 from databutton_app.mw.auth_mw import AuthConfig, get_authorized_user
 
@@ -55,7 +63,7 @@ def import_api_routers() -> APIRouter:
     api_module_prefix = "app.apis."
 
     for name in api_names:
-        print(f"Importing API: {name}")
+        logger.info("Importing API: %s", name)
         try:
             api_module = __import__(api_module_prefix + name, fromlist=[name])
             api_router = getattr(api_module, "router", None)
@@ -69,10 +77,10 @@ def import_api_routers() -> APIRouter:
                     ),
                 )
         except Exception as e:
-            print(e)
+            logger.exception(e)
             continue
 
-    print(routes.routes)
+    logger.debug(routes.routes)
 
     return routes
 
@@ -96,15 +104,15 @@ def create_app() -> FastAPI:
     for route in app.routes:
         if hasattr(route, "methods"):
             for method in route.methods:
-                print(f"{method} {route.path}")
+                logger.debug("%s %s", method, route.path)
 
     firebase_config = get_firebase_config()
 
     if firebase_config is None:
-        print("No firebase config found")
+        logger.info("No firebase config found")
         app.state.auth_config = None
     else:
-        print("Firebase config found")
+        logger.info("Firebase config found")
         auth_config = {
             "jwks_url": "https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com",
             "audience": firebase_config["projectId"],
