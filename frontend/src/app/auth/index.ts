@@ -1,5 +1,7 @@
+import { log } from '../../utils/logger';
+
 const validateConfig = () => {
-  console.log("No auth extension enabled");
+  log('No auth extension enabled');
 };
 
 export const auth = {

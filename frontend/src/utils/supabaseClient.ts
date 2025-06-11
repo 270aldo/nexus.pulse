@@ -1,5 +1,6 @@
 
 import { createClient } from '@supabase/supabase-js';
+import { log } from './logger';
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
@@ -114,7 +115,7 @@ export const fetchWellnessDataForDashboard = async (userId: string): Promise<Wel
 
 
 export const fetchTrainingDataForDashboard = async (userId: string, referenceDate: Date): Promise<TrainingDashboardData> => {
-  console.log(`Fetching training dashboard data for user ${userId} with reference date ${referenceDate.toISOString()}`);
+  log(`Fetching training dashboard data for user ${userId} with reference date ${referenceDate.toISOString()}`);
   const today = new Date(referenceDate); // Use referenceDate for all calculations
   today.setHours(0, 0, 0, 0); // Normalize to start of day
 
@@ -128,7 +129,7 @@ export const fetchTrainingDataForDashboard = async (userId: string, referenceDat
     weekEndDate.setHours(23,59,59,999);
 
     const weekLabel = `Sem. ${formatDateToYYYYMMDD(weekStartDate).substring(5)} - ${formatDateToYYYYMMDD(weekEndDate).substring(5)}`;
-    console.log(`Processing week: ${weekLabel}, Start: ${weekStartDate.toISOString()}, End: ${weekEndDate.toISOString()}`);
+    log(`Processing week: ${weekLabel}, Start: ${weekStartDate.toISOString()}, End: ${weekEndDate.toISOString()}`);
 
     const { data: sessionsInWeek, error: sessionsError } = await supabase
       .from('registros_sesion_entrenamiento')
@@ -187,14 +188,14 @@ export const fetchTrainingDataForDashboard = async (userId: string, referenceDat
     }
     weeklyVolumeData.push({ weekLabel, totalVolume: Math.round(totalVolumeForWeek), startDate: formatDateToYYYYMMDD(weekStartDate), endDate: formatDateToYYYYMMDD(weekEndDate) });
   }
-  console.log("Weekly Volume Data:", weeklyVolumeData);
+  log("Weekly Volume Data:", weeklyVolumeData);
 
   // 2. Calculate Training Frequency by Muscle Group (Last 30 days)
   const thirtyDaysAgo = new Date(today);
   thirtyDaysAgo.setDate(today.getDate() - 29); // -29 to include today, making it 30 days total
   thirtyDaysAgo.setHours(0,0,0,0);
 
-  console.log(`Fetching muscle group frequency from ${thirtyDaysAgo.toISOString()} to ${today.toISOString()}`);
+  log(`Fetching muscle group frequency from ${thirtyDaysAgo.toISOString()} to ${today.toISOString()}`);
 
   const { data: sessionsForFrequency, error: freqSessionsError } = await supabase
     .from('registros_sesion_entrenamiento')
@@ -236,7 +237,7 @@ export const fetchTrainingDataForDashboard = async (userId: string, referenceDat
     .map(([name, value]) => ({ name, value }))
     .sort((a, b) => b.value - a.value); // Sort by count descending
   
-  console.log("Muscle Group Frequency Data:", muscleGroupFrequencyData);
+  log("Muscle Group Frequency Data:", muscleGroupFrequencyData);
 
   return {
     weeklyVolumeData,
