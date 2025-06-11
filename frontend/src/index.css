@@ -108,3 +108,9 @@
   animation: line-flow 2s linear infinite;
   background-size: 200% 100%; /* Important for gradient movement */
 }
+
+@media (min-width: 834px) and (max-width: 1024px) {
+  html {
+    font-size: 17px;
+  }
+}

@@ -28,6 +28,12 @@ The backend server runs on port 8000 and the frontend development server runs on
 
 Visit <http://localhost:5173> to view the application.
 
+## Mobile Optimization
+
+The UI now includes custom breakpoints targeting iPad devices. Layouts adapt to a
+three-column grid on screens wider than 834&nbsp;px and fonts scale up slightly
+for tablet viewing.
+
 ## License
 
 This project is licensed under the [MIT License](LICENSE).

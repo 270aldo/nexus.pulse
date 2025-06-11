@@ -240,7 +240,7 @@ export default function App() {
             Cada herramienta y característica de NGX Pulse está diseñada para ofrecerte una visión 360º de tu progreso y potenciar tu camino hacia la excelencia.
           </SectionSubtitle>
           
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+          <div className="grid sm:grid-cols-2 ipad:grid-cols-3 gap-6 lg:gap-8">
             {features.slice(0,6).map((feature, index) => (
               <div
                 key={index}
@@ -276,7 +276,7 @@ export default function App() {
               Accede directamente a tus registros y herramientas de seguimiento.
             </p>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 ipad:grid-cols-3 lg:grid-cols-4 gap-6 lg:gap-8">
             {[ // Navigation items
               {
                 title: "Bienestar y Movilidad",
