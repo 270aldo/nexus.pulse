@@ -1,3 +1,6 @@
+/* Import mobile optimizations */
+@import './styles/mobile-optimizations.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -113,4 +116,97 @@
   html {
     font-size: 17px;
   }
+}
+
+/* Performance Optimizations */
+@layer utilities {
+  /* GPU acceleration for animations */
+  .animate-pulse,
+  .animate-pulse-slow,
+  .animate-slow-spin,
+  .animate-pulse-slower,
+  .animate-line-flow {
+    will-change: transform, opacity;
+    transform: translateZ(0); /* Force GPU layer */
+  }
+
+  /* Optimize common interactive elements */
+  .performance-optimized {
+    will-change: transform;
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    perspective: 1000px;
+  }
+
+  /* Smooth transitions */
+  .smooth-transform {
+    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    will-change: transform;
+  }
+
+  /* Loading states */
+  .loading-skeleton {
+    background: linear-gradient(90deg, 
+      hsl(var(--muted)) 25%, 
+      hsl(var(--muted-foreground) / 0.1) 50%, 
+      hsl(var(--muted)) 75%
+    );
+    background-size: 200% 100%;
+    animation: loading-shimmer 1.5s infinite;
+  }
+
+  @keyframes loading-shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+
+  /* Scroll performance */
+  .smooth-scroll {
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Text rendering optimization */
+  .text-optimized {
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Focus optimization */
+  .focus-optimized:focus-visible {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 2px;
+    transition: outline-offset 0.1s ease;
+  }
+
+  /* Hardware acceleration hints */
+  .hw-accelerated {
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
+    will-change: transform;
+  }
+}
+
+/* Critical performance CSS */
+* {
+  box-sizing: border-box;
+}
+
+/* Reduce layout shifts */
+img, svg {
+  display: block;
+  max-width: 100%;
+}
+
+/* Optimize font loading */
+@font-face {
+  font-display: swap;
+}
+
+/* Reduce paint events */
+body {
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }

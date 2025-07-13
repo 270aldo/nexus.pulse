@@ -3,7 +3,7 @@
 <div align="center">
 
 ![Nexus Pulse](https://img.shields.io/badge/Nexus%20Pulse-v1.0.0-blue?style=for-the-badge&logo=react)
-![Status](https://img.shields.io/badge/Status-Production%20Ready-green?style=for-the-badge)
+![Status](https://img.shields.io/badge/Status-In%20Development-orange?style=for-the-badge)
 ![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)
 
 **🌟 Enterprise-grade health optimization platform with AI coaching, biometric tracking, and personalized wellness recommendations**
@@ -131,6 +131,57 @@ const data = await response.json();
 ```
 
 **📖 Full API Documentation**: Available at `/docs` when backend is running
+
+---
+
+## 🚀 **Quick Deploy**
+
+### **Production Readiness Checklist**
+
+```bash
+# 1. Verify environment variables are set
+make check-env
+
+# 2. Run full build process
+make build
+
+# 3. Execute all tests
+make test
+
+# 4. Deploy to production
+# Frontend: Deploy to Netlify/Vercel
+# Backend: Deploy to Fly.io/Render/Railway
+```
+
+### **Environment Variables Required**
+
+#### **Frontend (.env)**
+```bash
+VITE_SUPABASE_URL=your_supabase_project_url
+VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+VITE_API_BASE_URL=http://localhost:8000
+```
+
+#### **Backend (.env)**
+```bash
+SUPABASE_URL=your_supabase_project_url
+SUPABASE_ANON_KEY=your_supabase_anon_key
+SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
+OPENAI_API_KEY=your_openai_api_key
+JWT_SECRET_KEY=your_secure_jwt_secret
+```
+
+### **Deploy Commands**
+```bash
+# Build and verify
+make build
+npm run lint          # Frontend linting
+npm run type-check     # TypeScript validation
+
+# Production deployment
+# Frontend build output: frontend/dist/
+# Backend: Run with uvicorn app.main:app --host 0.0.0.0 --port 8000
+```
 
 ---
 

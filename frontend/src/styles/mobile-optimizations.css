@@ -1,0 +1,245 @@
+/* Mobile Optimizations for NGX Pulse */
+
+/* Touch Target Optimization */
+@media (max-width: 640px) {
+  /* Ensure all interactive elements meet 44px minimum */
+  .touch-target,
+  button,
+  [role="button"],
+  input[type="button"],
+  input[type="submit"],
+  .clickable {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Input field optimization */
+  input, 
+  textarea, 
+  select {
+    min-height: 44px;
+    font-size: 16px; /* Prevents zoom on iOS */
+    padding: 12px 16px;
+  }
+
+  /* Button spacing for easier touch */
+  .button-group button + button {
+    margin-left: 8px;
+  }
+
+  /* Larger tap targets for small icons */
+  .icon-button {
+    padding: 12px;
+    min-width: 44px;
+    min-height: 44px;
+  }
+}
+
+/* Typography Mobile Scaling */
+@media (max-width: 375px) {
+  /* iPhone SE specific optimizations */
+  .text-4xl { font-size: 1.75rem; }
+  .text-3xl { font-size: 1.5rem; }
+  .text-2xl { font-size: 1.25rem; }
+  .text-xl { font-size: 1.125rem; }
+  .text-lg { font-size: 1rem; }
+  
+  /* Reduce excessive padding on very small screens */
+  .p-8 { padding: 1rem; }
+  .p-6 { padding: 0.75rem; }
+  .p-4 { padding: 0.5rem; }
+  
+  /* Smaller gaps between elements */
+  .gap-6 { gap: 1rem; }
+  .gap-4 { gap: 0.75rem; }
+}
+
+/* Tablet Optimizations */
+@media (min-width: 768px) and (max-width: 1024px) {
+  /* Better tablet layouts */
+  .tablet-grid-2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  
+  .tablet-grid-3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+/* Remove hover effects on touch devices */
+@media (hover: none) {
+  .hover\:scale-105:hover,
+  .hover\:bg-opacity-90:hover,
+  .hover\:shadow-lg:hover {
+    transform: none;
+    background-opacity: 1;
+    box-shadow: none;
+  }
+  
+  /* Replace with active states for better touch feedback */
+  .hover\:scale-105:active {
+    transform: scale(0.98);
+  }
+  
+  .hover\:bg-opacity-90:active {
+    background-opacity: 0.9;
+  }
+}
+
+/* Mobile Navigation Optimizations */
+@media (max-width: 640px) {
+  /* Stack navigation items */
+  .mobile-nav {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  /* Larger touch targets for navigation */
+  .nav-item {
+    min-height: 48px;
+    padding: 12px 16px;
+    width: 100%;
+    text-align: left;
+  }
+}
+
+/* Form Layout Mobile Improvements */
+@media (max-width: 640px) {
+  /* Force single column on mobile */
+  .form-grid-mobile {
+    grid-template-columns: 1fr !important;
+    gap: 1rem;
+  }
+  
+  /* Better spacing for form groups */
+  .form-group {
+    margin-bottom: 1.5rem;
+  }
+  
+  /* Larger labels for better readability */
+  .form-label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+    display: block;
+  }
+}
+
+/* Chart and Graph Mobile Optimizations */
+@media (max-width: 640px) {
+  /* Reduce chart heights on mobile */
+  .chart-container {
+    height: 200px !important;
+  }
+  
+  /* Better legend positioning */
+  .chart-legend {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+  
+  /* Responsive chart text */
+  .recharts-text {
+    font-size: 10px;
+  }
+  
+  .recharts-legend-item-text {
+    font-size: 12px;
+  }
+}
+
+/* Modal and Dialog Mobile Optimization */
+@media (max-width: 640px) {
+  /* Full screen modals on mobile */
+  .modal-mobile {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    margin: 0;
+    border-radius: 0;
+    max-width: 100vw;
+    max-height: 100vh;
+  }
+  
+  /* Better modal content spacing */
+  .modal-content {
+    padding: 1rem;
+    max-height: calc(100vh - 2rem);
+    overflow-y: auto;
+  }
+}
+
+/* Performance: Reduce animations on mobile */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Fix overflow issues */
+.overflow-hidden-mobile {
+  overflow-x: hidden;
+}
+
+/* Better scrolling on iOS */
+.smooth-scroll-mobile {
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+}
+
+/* Prevent text selection on buttons (better UX on mobile) */
+button,
+.button,
+[role="button"] {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/* Better focus states for keyboard navigation */
+@media (hover: hover) {
+  .focus-visible:focus-visible {
+    outline: 2px solid #8b5cf6;
+    outline-offset: 2px;
+  }
+}
+
+/* Mobile-specific utility classes */
+@media (max-width: 640px) {
+  .hidden-mobile {
+    display: none !important;
+  }
+  
+  .block-mobile {
+    display: block !important;
+  }
+  
+  .flex-mobile {
+    display: flex !important;
+  }
+  
+  .grid-mobile {
+    display: grid !important;
+  }
+}
+
+/* Landscape orientation fixes for mobile */
+@media (max-width: 896px) and (orientation: landscape) {
+  .landscape-adjust {
+    padding: 0.5rem;
+  }
+  
+  .landscape-nav {
+    min-height: 40px;
+  }
+}

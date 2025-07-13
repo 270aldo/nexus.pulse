@@ -30,7 +30,7 @@ class AICoachMessageResponse(BaseModel):
 @router.get("/", response_model=List[AICoachMessageResponse])
 def get_ai_coach_messages(
     unread_only: bool = False,
-    user: AuthorizedUser = Depends(),
+    user: AuthorizedUser = None,
 ) -> List[AICoachMessageResponse]:
     """Return AI Coach messages for the authenticated user."""
 

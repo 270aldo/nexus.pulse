@@ -232,7 +232,7 @@ const WellnessLogPageContent = () => { // Renombrar el contenido original
         setCurrentStressLevel(undefined);
         setCurrentMoodLevel(undefined);
         setCurrentNotes("");
-        fetchWellnessEntries(); // Recargar entradas de bienestar para el día
+        // TODO: Reload wellness entries for the day if needed
       } catch (error: any) {
         console.error("Error en handleSubmit (Bienestar):", error);
         toast.error(error.message || "Error al guardar actividad de bienestar.");

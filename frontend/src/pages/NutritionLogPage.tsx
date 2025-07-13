@@ -146,7 +146,7 @@ const NutritionLogPageContent = () => {
         const { data: registroData, error: registroError } = await supabase
           .from("registros_nutricion")
           .select("*")
-          .eq("user_id", userId)
+          .eq("user_id", session.user.id)
           .eq("fecha_registro", formattedSelectedDate)
           .maybeSingle();
 
@@ -255,7 +255,7 @@ const NutritionLogPageContent = () => {
                 // ESTA ES LA PARTE CRÍTICA: necesitamos 'entry.fecha_registro' o similar
                 // Si 'calorieEntries' no tiene la fecha de cada comida, esta lógica es incorrecta.
                 // Por ahora, asumiré que SÍ la tiene como 'entry.fecha_registro'
-                return entry.fecha_registro === dayString && entry.calorias != null;
+                return entry.fecha_registro_original === dayString && entry.calorias != null;
             });
 
             let dailyTotalCalories: number | null = null;
@@ -365,7 +365,54 @@ const NutritionLogPageContent = () => {
 
     setIsSaving(true); // Indicate that an operation is in progress
 
-    const registroNutricionId = await getOrCreateRegistroNutricionDelDia();
+    // Get or create the nutrition record for the day
+    let registroNutricionId: string | null = null;
+    
+    try {
+      // First, try to find existing record
+      const { data: existingRecord, error: findError } = await supabase
+        .from("registros_nutricion")
+        .select("id")
+        .eq("user_id", session.user.id)
+        .eq("fecha_registro", format(selectedDate, "yyyy-MM-dd"))
+        .single();
+
+      if (findError && findError.code !== 'PGRST116') {
+        console.error("Error finding nutrition record:", findError);
+        throw findError;
+      }
+
+      if (existingRecord) {
+        registroNutricionId = existingRecord.id;
+      } else {
+        // Create new record
+        const { data: newRecord, error: createError } = await supabase
+          .from("registros_nutricion")
+          .insert({
+            user_id: session.user.id,
+            fecha_registro: format(selectedDate, "yyyy-MM-dd"),
+            horarios_preferidos: timingNutricionalActivo ? horariosPreferidos : {},
+            timing_activo: timingNutricionalActivo,
+            agua_consumida_ml: aguaConsumida,
+            meta_agua_ml: metaAgua,
+            notas_nutricion: notasNutricion,
+          })
+          .select("id")
+          .single();
+
+        if (createError) {
+          console.error("Error creating nutrition record:", createError);
+          throw createError;
+        }
+
+        registroNutricionId = newRecord.id;
+      }
+    } catch (error) {
+      console.error("Error getting/creating nutrition record:", error);
+      toast.error("Error al obtener o crear el registro del día.");
+      setIsSaving(false);
+      return;
+    }
 
     if (!registroNutricionId) {
       toast.error("No se pudo obtener o crear el registro del día. Inténtalo de nuevo.");
@@ -490,7 +537,54 @@ const NutritionLogPageContent = () => {
     const userId = session.user.id;
     // Ensure getOrCreateRegistroNutricionDelDia uses the *current state* of the page for its fields
     // if it needs to create the record. Then we fetch its ID to perform an update.
-    const registroNutricionId = await getOrCreateRegistroNutricionDelDia(); 
+    // Get or create the nutrition record for the day
+    let registroNutricionId: string | null = null;
+    
+    try {
+      // First, try to find existing record
+      const { data: existingRecord, error: findError } = await supabase
+        .from("registros_nutricion")
+        .select("id")
+        .eq("user_id", session.user.id)
+        .eq("fecha_registro", format(selectedDate, "yyyy-MM-dd"))
+        .single();
+
+      if (findError && findError.code !== 'PGRST116') {
+        console.error("Error finding nutrition record:", findError);
+        throw findError;
+      }
+
+      if (existingRecord) {
+        registroNutricionId = existingRecord.id;
+      } else {
+        // Create new record
+        const { data: newRecord, error: createError } = await supabase
+          .from("registros_nutricion")
+          .insert({
+            user_id: session.user.id,
+            fecha_registro: format(selectedDate, "yyyy-MM-dd"),
+            horarios_preferidos: timingNutricionalActivo ? horariosPreferidos : {},
+            timing_activo: timingNutricionalActivo,
+            agua_consumida_ml: aguaConsumida,
+            meta_agua_ml: metaAgua,
+            notas_nutricion: notasNutricion,
+          })
+          .select("id")
+          .single();
+
+        if (createError) {
+          console.error("Error creating nutrition record:", createError);
+          throw createError;
+        }
+
+        registroNutricionId = newRecord.id;
+      }
+    } catch (error) {
+      console.error("Error getting/creating nutrition record:", error);
+      toast.error("Error al obtener o crear el registro del día.");
+      setIsSaving(false);
+      return;
+    } 
 
     if (!registroNutricionId) {
       toast.error("No se pudo obtener o crear el registro del día para guardar. Inténtalo de nuevo.");
@@ -512,7 +606,7 @@ const NutritionLogPageContent = () => {
           notas_nutricion: notasNutricion,
         })
         .eq("id", registroNutricionId)
-        .eq("user_id", userId); // Ensure user owns the record for RLS
+        .eq("user_id", session.user.id); // Ensure user owns the record for RLS
 
       if (error) {
         console.error("Error updating registros_nutricion:", error);
@@ -863,58 +957,5 @@ const NutritionLogPage: React.FC = () => {
     </ProtectedRoute>
   );
 };
-
-
-  const handleSaveDayLog = async () => {
-    if (!session?.user || !selectedDate) {
-      toast.error("Usuario no autenticado o fecha no seleccionada para guardar.");
-      return;
-    }
-
-    setIsSaving(true);
-    const userId = session.user.id;
-    // Ensure getOrCreateRegistroNutricionDelDia uses the *current state* of the page for its fields
-    // if it needs to create the record. Then we fetch its ID to perform an update.
-    const registroNutricionId = await getOrCreateRegistroNutricionDelDia(); 
-
-    if (!registroNutricionId) {
-      toast.error("No se pudo obtener o crear el registro del día para guardar. Inténtalo de nuevo.");
-      setIsSaving(false);
-      return;
-    }
-
-    // Now, update the main record with the latest general info from the page state.
-    // Meals are already saved individually.
-    try {
-      const { data, error } = await supabase
-        .from("registros_nutricion")
-        .update({
-          // user_id and fecha_registro are not updated as they define the record itself
-          horarios_preferidos: timingNutricionalActivo ? horariosPreferidos : {},
-          timing_activo: timingNutricionalActivo,
-          agua_consumida_ml: aguaConsumida,
-          meta_agua_ml: metaAgua,
-          notas_nutricion: notasNutricion,
-        })
-        .eq("id", registroNutricionId)
-        .eq("user_id", userId); // Ensure user owns the record for RLS
-
-      if (error) {
-        console.error("Error updating registros_nutricion:", error);
-        throw new Error(`Error al actualizar el registro principal: ${error.message}`);
-      }
-
-      toast.success("Registro del día actualizado con éxito en Supabase!");
-      // No need to clean form fields here typically, as user might continue editing.
-      // Or, if desired, reload the day's log to confirm all data is fresh from DB:
-      // loadDayLog(); // Re-call loadDayLog if you want to refresh everything from DB
-
-    } catch (error: any) {
-      console.error("Error completo en handleSaveDayLog:", error);
-      toast.error(error.message || "Ocurrió un error desconocido al guardar.");
-    } finally {
-      setIsSaving(false);
-    }
-  };
 
 export default NutritionLogPage;

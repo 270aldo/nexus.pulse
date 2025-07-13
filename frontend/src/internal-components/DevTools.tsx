@@ -1,7 +1,36 @@
-import { useEffect } from "react";
-import { MessageEmitter } from "../dev-components/Beacon";
-import { InternalErrorBoundary } from "../dev-components/InternalErrorBoundary";
-import { UserErrorBoundary } from "../dev-components/UserErrorBoundary";
+import { useEffect, ErrorInfo, Component } from "react";
+
+// Simple Error Boundary Component
+class ErrorBoundary extends Component<
+  { children: React.ReactNode; fallback?: React.ReactNode },
+  { hasError: boolean }
+> {
+  constructor(props: { children: React.ReactNode; fallback?: React.ReactNode }) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError(_: Error) {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    console.error('Error boundary caught an error:', error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return this.props.fallback || (
+        <div className="p-4 bg-red-50 border border-red-200 rounded-md">
+          <h3 className="text-red-800 font-medium">Something went wrong</h3>
+          <p className="text-red-600 text-sm mt-1">Please refresh the page or try again later.</p>
+        </div>
+      );
+    }
+
+    return this.props.children;
+  }
+}
 
 interface Props {
   children: React.ReactNode;
@@ -29,11 +58,9 @@ export const DevTools = ({ children, shouldRender }: Props) => {
 
   if (shouldRender) {
     return (
-      <InternalErrorBoundary>
-        <UserErrorBoundary>
-          <MessageEmitter>{children}</MessageEmitter>
-        </UserErrorBoundary>
-      </InternalErrorBoundary>
+      <ErrorBoundary>
+        {children}
+      </ErrorBoundary>
     );
   }
 

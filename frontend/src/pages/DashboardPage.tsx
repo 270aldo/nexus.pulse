@@ -14,6 +14,8 @@ import { toast } from "sonner"; // For potential error notifications
 import { useAppContext } from "../components/AppProvider"; // Para isLoadingSession y currentUserId
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
+import { apiClient } from "../utils/apiClient";
+import { ThemeToggle } from "../components/ThemeToggle";
 
 
 const DashboardPageContent: React.FC = () => { // Renombrar el contenido original
@@ -221,8 +223,8 @@ const [sleep7DayTrend, setSleep7DayTrend] = useState<SleepTrendData[]>([]);
         // The actual brain client function name might vary slightly,
         // e.g., getAiCoachMessages or listAiCoachMessages.
         // Assuming it's getAiCoachMessages based on previous inspection.
-        const response = await brain.get_ai_coach_messages(); // No params needed for this mock endpoint
-        const messages: AICoachMessage[] = await response.json();
+        const response = await apiClient.get('/api/ai/coach-messages');
+        const messages: AICoachMessage[] = response.success ? response.data : [];
         setAiCoachMessages(messages);
       } catch (error) {
         console.error("Error fetching AI Coach messages:", error);
@@ -267,6 +269,7 @@ const [sleep7DayTrend, setSleep7DayTrend] = useState<SleepTrendData[]>([]);
               {item}
             </a>
           ))}
+          <ThemeToggle />
         </nav>
       </div>
 

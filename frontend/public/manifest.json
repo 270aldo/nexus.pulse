@@ -1,0 +1,63 @@
+{
+  "name": "NGX Pulse - AI-Powered Health & Wellness Platform",
+  "short_name": "NGX Pulse",
+  "description": "Enterprise-grade health optimization platform with AI coaching, biometric tracking, and personalized wellness recommendations",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0a0a",
+  "theme_color": "#8b5cf6",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "lang": "es",
+  "categories": ["health", "fitness", "lifestyle", "medical"],
+  "icons": [
+    {
+      "src": "/light.ico",
+      "sizes": "32x32",
+      "type": "image/x-icon",
+      "purpose": "any"
+    },
+    {
+      "src": "/dark.ico", 
+      "sizes": "32x32",
+      "type": "image/x-icon",
+      "purpose": "any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Dashboard",
+      "short_name": "Dashboard",
+      "description": "Ver resumen de salud y métricas",
+      "url": "/dashboard-page",
+      "icons": [{ "src": "/light.ico", "sizes": "32x32" }]
+    },
+    {
+      "name": "Iniciar Sesión",
+      "short_name": "Login", 
+      "description": "Acceder a tu cuenta",
+      "url": "/auth-page",
+      "icons": [{ "src": "/dark.ico", "sizes": "32x32" }]
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshot-wide.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "NGX Pulse Dashboard"
+    },
+    {
+      "src": "/screenshot-narrow.png", 
+      "sizes": "360x640",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "NGX Pulse Mobile"
+    }
+  ],
+  "prefer_related_applications": false,
+  "edge_side_panel": {
+    "preferred_width": 400
+  }
+}
