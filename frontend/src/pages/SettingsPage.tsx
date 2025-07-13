@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useAppContext } from "../components/AppProvider";
 import { useLocation } from "react-router-dom";
 import { MessageSquareText } from "lucide-react"; // Icon for feedback
-import BackButton from "components/BackButton"; // Importar BackButton
+import BackButton from "@/components/BackButton"; // Importar BackButton
 
 const SettingsPageContent: React.FC = () => {
   const { currentUserId } = useAppContext();

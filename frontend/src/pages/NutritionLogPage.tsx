@@ -6,7 +6,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
-import DashboardCard from "components/DashboardCard"; // Asumiendo que existe
+import DashboardCard from "@/components/DashboardCard"; // Asumiendo que existe
 import ProtectedRoute from "../components/ProtectedRoute"; // Importar ProtectedRoute
 import { format } from "date-fns";
 import { es } from "date-fns/locale"; // Para formato de fecha en español si se desea

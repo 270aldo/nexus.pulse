@@ -6,9 +6,9 @@ import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import DashboardCard from "components/DashboardCard";
+import DashboardCard from "@/components/DashboardCard";
 import ProtectedRoute from "../components/ProtectedRoute";
-import BackButton from "components/BackButton"; // Importar BackButton
+import BackButton from "@/components/BackButton"; // Importar BackButton
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { Calendar as CalendarIcon, ChevronLeft, PlusCircle, Trash2, Save } from "lucide-react";

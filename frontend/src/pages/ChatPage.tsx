@@ -8,7 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Send, Bot, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-import BackButton from "components/BackButton"; // Importar BackButton
+import BackButton from "@/components/BackButton"; // Importar BackButton
 
 interface Message {
   id: string; // Will be Supabase UUID after saving, local temporary before that

@@ -9,7 +9,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { CalendarIcon, Loader2, ChevronLeft, PlusCircle } from "lucide-react";
 import { supabase } from "../utils/supabaseClient";
 import { toast, Toaster } from "sonner";
-import DashboardCard from "components/DashboardCard";
+import DashboardCard from "@/components/DashboardCard";
 import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
