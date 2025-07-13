@@ -5,7 +5,6 @@ type Theme = "dark" | "light" | "system";
 type ThemeProviderProps = {
   children: React.ReactNode;
   defaultTheme?: Theme;
-  storageKey?: string;
 };
 
 type ThemeProviderState = {
@@ -21,16 +20,15 @@ const initialState: ThemeProviderState = {
 export const ThemeProviderContext =
   createContext<ThemeProviderState>(initialState);
 
-declare const __APP_ID__: string;
+const STORAGE_KEY = "ngx-pulse-ui-theme";
 
 export function ThemeProvider({
   children,
   defaultTheme = "system",
-  storageKey = `databutton-${__APP_ID__}-ui-theme`,
   ...props
 }: ThemeProviderProps) {
   const [theme, setTheme] = useState<Theme>(
-    () => (localStorage.getItem(storageKey) as Theme) || defaultTheme,
+    () => (localStorage.getItem(STORAGE_KEY) as Theme) || defaultTheme,
   );
 
   useEffect(() => {
@@ -54,7 +52,7 @@ export function ThemeProvider({
   const value = {
     theme,
     setTheme: (theme: Theme) => {
-      localStorage.setItem(storageKey, theme);
+      localStorage.setItem(STORAGE_KEY, theme);
       setTheme(theme);
     },
   };

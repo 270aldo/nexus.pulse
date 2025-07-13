@@ -1,7 +1,8 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 import os
-import databutton as db
+#import databutton as db
+import os
 from supabase import create_client, Client
 
 try:
@@ -28,15 +29,15 @@ class ChatResponse(BaseModel):
 
 
 def get_supabase_client() -> Client:
-    url = db.secrets.get("SUPABASE_URL")
-    key = db.secrets.get("SUPABASE_ANON_KEY")
+    url = os.environ.get("SUPABASE_URL")
+    key = os.environ.get("SUPABASE_ANON_KEY")
     if not url or not key:
         raise HTTPException(status_code=500, detail="Supabase configuration missing")
     return create_client(url, key)
 
 
 def generate_ai_reply(prompt: str) -> str:
-    api_key = os.environ.get("OPENAI_API_KEY") or db.secrets.get("OPENAI_API_KEY")
+    api_key = os.environ.get("OPENAI_API_KEY")
     if not api_key or openai is None:
         # Fallback message if OpenAI isn't configured
         return "Lo siento, el servicio de IA no está disponible en este momento."

@@ -1,11 +1,11 @@
 # Standard library imports
+import os
 from typing import List, Optional, Dict, Any
 
 # Third-party imports
 from fastapi import APIRouter, Depends, HTTPException, Header, Request, status
 from pydantic import BaseModel, Field, HttpUrl
 from supabase import create_client, Client
-import databutton as db
 import logging
 
 # Attempt to import Supabase/GoTrue specific error
@@ -74,8 +74,8 @@ class SyncResponse(BaseModel):
 async def get_current_user_data(request: Request, authorization: Optional[str] = Header(None)) -> Dict[str, Any]:
     logger.debug("get_current_user_data invoked")
     logger.debug("Attempting to get Supabase client")
-    supabase_url = db.secrets.get("SUPABASE_URL")
-    supabase_anon_key = db.secrets.get("SUPABASE_ANON_KEY")
+    supabase_url = os.environ.get("SUPABASE_URL")
+    supabase_anon_key = os.environ.get("SUPABASE_ANON_KEY")
 
     if not supabase_url or not supabase_anon_key:
         logger.error("Supabase URL or Anon Key is missing from secrets")
@@ -167,8 +167,8 @@ async def sync_health_kit_data(
 
     logger.info("Starting HealthKit data sync for user_id: %s", user_id)
 
-    supabase_url_db = db.secrets.get("SUPABASE_URL")
-    supabase_key_db = db.secrets.get("SUPABASE_ANON_KEY") 
+    supabase_url_db = os.environ.get("SUPABASE_URL")
+    supabase_key_db = os.environ.get("SUPABASE_ANON_KEY") 
     if not supabase_url_db or not supabase_key_db:
         logger.error("Supabase config missing for DB operations")
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Supabase config missing for DB operations")

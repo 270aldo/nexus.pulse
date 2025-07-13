@@ -5,7 +5,7 @@ import { useAppContext } from "./AppProvider"; // Asegúrate que la ruta sea cor
 import { Skeleton } from "@/components/ui/skeleton"; // Para el estado de carga
 
 interface ProtectedRouteProps {
-  // No se necesitan props explícitas aquí, ya que el contexto maneja la sesión
+  children: React.ReactNode;
 }
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {

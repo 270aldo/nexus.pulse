@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from typing import List, Optional
 import datetime
-import databutton as db
+import os
 from supabase import create_client, Client
 from app.auth import AuthorizedUser
 
@@ -34,8 +34,8 @@ def get_ai_coach_messages(
 ) -> List[AICoachMessageResponse]:
     """Return AI Coach messages for the authenticated user."""
 
-    supabase_url = db.secrets.get("SUPABASE_URL")
-    supabase_key = db.secrets.get("SUPABASE_ANON_KEY")
+    supabase_url = os.environ.get("SUPABASE_URL")
+    supabase_key = os.environ.get("SUPABASE_ANON_KEY")
 
     if not supabase_url or not supabase_key:
         raise HTTPException(status_code=500, detail="Supabase configuration missing")

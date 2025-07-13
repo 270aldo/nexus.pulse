@@ -86,7 +86,7 @@ const BiometricLogPageContent: React.FC = () => {
         setUserId(user.id);
       } else {
         toast.error("Usuario no autenticado. Redirigiendo al login.");
-        navigate("/auth");
+        navigate("/auth-page");
       }
     };
     getUser();

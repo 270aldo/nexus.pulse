@@ -1,31 +1,28 @@
-import { lazy, type ReactNode, Suspense } from "react";
-import { createBrowserRouter } from "react-router-dom";
+import { createBrowserRouter, Outlet } from "react-router-dom";
 import { userRoutes } from "./user-routes";
+import NotFoundPage from "./pages/NotFoundPage";
+import SomethingWentWrongPage from "./pages/SomethingWentWrongPage";
+import { AppProvider } from "./components/AppProvider";
 
-export const SuspenseWrapper = ({ children }: { children: ReactNode }) => {
-  return <Suspense>{children}</Suspense>;
+// Wrapper para incluir AppProvider en todas las rutas
+const AppLayout = () => {
+  return (
+    <AppProvider>
+      <Outlet />
+    </AppProvider>
+  );
 };
 
-const NotFoundPage = lazy(() => import("./pages/NotFoundPage"));
-const SomethingWentWrongPage = lazy(
-  () => import("./pages/SomethingWentWrongPage"),
-);
-
-export const router = createBrowserRouter(
-  [
-    ...userRoutes,
-    {
-      path: "*",
-      element: (
-        <SuspenseWrapper>
-          <NotFoundPage />
-        </SuspenseWrapper>
-      ),
-      errorElement: (
-        <SuspenseWrapper>
-          <SomethingWentWrongPage />
-        </SuspenseWrapper>
-      ),
-    },
-  ]
-);
+export const router = createBrowserRouter([
+  {
+    element: <AppLayout />,
+    errorElement: <SomethingWentWrongPage />,
+    children: [
+      ...userRoutes,
+      {
+        path: "*",
+        element: <NotFoundPage />,
+      },
+    ],
+  },
+]);

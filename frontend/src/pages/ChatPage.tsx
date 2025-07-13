@@ -99,7 +99,7 @@ const ChatPage: React.FC = () => {
     setCurrentMessage("");
 
     try {
-      const response = await fetch("/routes/chat", {
+      const response = await fetch("http://localhost:8000/routes/chat", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

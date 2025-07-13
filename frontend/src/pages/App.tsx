@@ -1,7 +1,8 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Zap, Brain, Activity, ArrowRight, ChevronRight, Settings, Target, BarChart3, ZapIcon, BrainIcon, ActivityIcon, AwardIcon, UsersIcon, MessageSquareIcon, BrainCircuit, Atom, CalendarDays, HeartPulse, Utensils, Dumbbell } from "lucide-react"; // Added BrainCircuit, Helix and more icons for potential use
-import { useNavigate } from "react-router-dom"; // Added for navigation
+import { Zap, Brain, Activity, ArrowRight, ChevronRight, Settings, Target, BarChart3, ZapIcon, BrainIcon, ActivityIcon, AwardIcon, UsersIcon, MessageSquareIcon, BrainCircuit, Atom, CalendarDays, HeartPulse, Utensils, Dumbbell } from "lucide-react";
+import "../styles/app.css";
 
 // Helper component for section title (similar to previous, can be adjusted)
 const SectionTitle = ({ children, className }: { children: React.ReactNode, className?: string }) => (
@@ -17,7 +18,11 @@ const SectionSubtitle = ({ children, className }: { children: React.ReactNode, c
 );
 
 export default function App() {
-  const navigate = useNavigate(); // Hook for navigation
+  const navigate = useNavigate();
+  
+  const handleNavigation = (path: string) => {
+    navigate(path);
+  };
 
   const features = [
     {
@@ -74,6 +79,7 @@ export default function App() {
             <Button 
               variant="outline"
               className="text-slate-200 border-neutral-700 hover:bg-neutral-800 hover:text-brand-violet hover:border-brand-violet transition-colors"
+              onClick={() => handleNavigation("/auth-page")}
             >
               Login
             </Button>
@@ -104,14 +110,15 @@ export default function App() {
             </p>
             <div className="mt-10 flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
               <Button
-                size="xl"
+                size="lg"
                 className="w-full sm:w-auto group relative inline-flex items-center justify-center h-14 px-8 text-base font-semibold text-white bg-brand-violet hover:bg-brand-violet/90 shadow-lg shadow-brand-violet/40 hover:shadow-brand-violet/60 focus:ring-offset-neutral-950 rounded-lg transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-brand-violet/50 focus:ring-offset-2 shadow-[0_0_10px_2px_rgba(109,0,255,0.3)] hover:shadow-[0_0_25px_8px_rgba(109,0,255,0.5)]"
+                onClick={() => handleNavigation("/auth-page")}
               >
                 Acceder a mi Programa
                 <ArrowRight className="w-5 h-5 ml-2 transition-transform duration-300 ease-in-out group-hover:translate-x-1" />
               </Button>
               <Button
-                size="xl"
+                size="lg"
                 variant="outline"
                 className="w-full sm:w-auto group relative inline-flex items-center justify-center h-14 px-8 text-base font-semibold text-neutral-200 border-2 border-brand-violet/70 hover:bg-brand-violet/10 hover:text-brand-violet hover:border-brand-violet shadow-md focus:ring-offset-neutral-950 rounded-lg transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-brand-violet/50 focus:ring-offset-2 shadow-[0_0_8px_1px_rgba(109,0,255,0.2)] hover:shadow-[0_0_20px_5px_rgba(109,0,255,0.4)]"
               >
@@ -138,60 +145,24 @@ export default function App() {
                 className="group/aicard relative w-full h-full bg-neutral-700/60 rounded-xl shadow-lg p-4 flex flex-col items-center justify-center text-center overflow-hidden transition-shadow duration-300 hover:shadow-[0_0_35px_10px_rgba(109,0,255,0.3)]"
               >
                 {/* Subtle dot pattern background - Kept */}
-                <div 
-                  className="absolute inset-0 opacity-5 pointer-events-none z-0"
-                  style={{
-                    backgroundImage: "radial-gradient(circle at 1px 1px, #A3A3A3 1px, transparent 0)", 
-                    backgroundSize: "10px 10px",
-                  }}
-                />
+                <div className="absolute inset-0 opacity-5 pointer-events-none z-0 dot-pattern-background" />
                 
                 {/* Main content wrapper for dashboard layout */}
                 <div className="relative z-10 w-full h-full flex items-center justify-center">
                   {/* Connecting Lines - Placed before widgets and brain for z-index */}
                   {/* Line to Top-Left Widget */}
-                  <div 
-                    className="absolute w-10 h-px opacity-75 group-hover/aicard:opacity-100 transition-opacity duration-300 animate-line-flow"
-                    style={{
-                      backgroundImage: 'linear-gradient(to right, transparent 0%, rgba(109,0,255,0.7) 50%, transparent 100%)',
-                      top: 'calc(50% - 10px)', 
-                      left: 'calc(50% - 30px)', 
-                      transform: 'translate(-50%, -50%) rotate(-45deg)', 
-                      transformOrigin: 'right center'
-                    }}
-                  ></div>
+                  <div className="absolute w-10 connection-line connection-line-top-left group-hover/aicard:opacity-100 transition-opacity duration-300 animate-line-flow"></div>
                   {/* Line to Top-Right Widget */}
-                  <div 
-                    className="absolute w-10 h-px opacity-75 group-hover/aicard:opacity-100 transition-opacity duration-300 animate-line-flow"
-                    style={{
-                      backgroundImage: 'linear-gradient(to right, transparent 0%, rgba(99,102,241,0.7) 50%, transparent 100%)',
-                      top: 'calc(50% - 10px)', 
-                      left: 'calc(50% - 10px)', 
-                      transform: 'translate(-50%, -50%) rotate(45deg)', 
-                      transformOrigin: 'left center' 
-                    }}
-                  ></div>
+                  <div className="absolute w-10 connection-line connection-line-top-right group-hover/aicard:opacity-100 transition-opacity duration-300 animate-line-flow"></div>
                   {/* Line to Bottom-Center Widget */}
-                  <div 
-                    className="absolute w-8 h-px opacity-75 group-hover/aicard:opacity-100 transition-opacity duration-300 animate-line-flow"
-                    style={{
-                      backgroundImage: 'linear-gradient(to right, transparent 0%, rgba(99,102,241,0.7) 50%, transparent 100%)',
-                      top: 'calc(50% + 10px)', 
-                      left: '50%', 
-                      transform: 'translate(-50%, -50%) rotate(90deg)', 
-                      transformOrigin: 'center top' 
-                    }}
-                  ></div>
+                  <div className="absolute w-8 connection-line connection-line-bottom-center group-hover/aicard:opacity-100 transition-opacity duration-300 animate-line-flow"></div>
 
                   {/* Widget Top-Left: Mini Bar Chart */}
                   <div className="absolute top-3 left-3 w-16 h-10 bg-neutral-600/30 border border-neutral-500/40 rounded-md p-1 flex items-end justify-around gap-px overflow-hidden shadow-inner">
-                    {[4, 7, 5, 6].map((h, i) => (
-                      <div 
-                        key={i} 
-                        className="w-2 bg-brand-violet/70 rounded-t-sm group-hover/aicard:bg-brand-violet/80 transition-all duration-300 ease-in-out group-hover/aicard:scale-y-110 origin-bottom"
-                        style={{ height: `${h * 10}%` }} 
-                      />
-                    ))}
+                    <div className="w-2 bg-brand-violet/70 rounded-t-sm chart-bar origin-bottom chart-bar-height-40" />
+                    <div className="w-2 bg-brand-violet/70 rounded-t-sm chart-bar origin-bottom chart-bar-height-70" />
+                    <div className="w-2 bg-brand-violet/70 rounded-t-sm chart-bar origin-bottom chart-bar-height-50" />
+                    <div className="w-2 bg-brand-violet/70 rounded-t-sm chart-bar origin-bottom chart-bar-height-60" />
                   </div>
                   {/* Widget Top-Right: Circular Pulse Indicator */}
                   <div className="absolute top-3 right-3 w-10 h-10 bg-neutral-600/30 border border-neutral-500/40 rounded-full flex items-center justify-center shadow-inner">
@@ -313,7 +284,7 @@ export default function App() {
             ].map((item) => (
               <button
                 key={item.title}
-                onClick={() => navigate(item.path)}
+                onClick={() => handleNavigation(item.path)}
                 className={`relative group p-6 rounded-xl shadow-xl shadow-black/40 border border-neutral-700/60 transition-all duration-300 transform hover:-translate-y-1 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-neutral-900 ${item.bgColor} ${item.borderColor} text-left w-full`}
               >
                 <div className="flex flex-col items-start h-full">
