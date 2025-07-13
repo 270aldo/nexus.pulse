@@ -1,6 +1,16 @@
-// NGX Pulse API Client - Centralized HTTP client with authentication
+// NGX Pulse API Client - Centralized HTTP client with authentication and interceptors
 import { supabase } from './supabaseClient';
 import { toast } from 'sonner';
+
+// Import authManager for auto-logout functionality
+let authManager: any = null;
+const getAuthManager = async () => {
+  if (!authManager) {
+    const { authManager: manager } = await import('./auth');
+    authManager = manager;
+  }
+  return authManager;
+};
 
 interface ApiResponse<T = any> {
   success: boolean;
@@ -131,11 +141,25 @@ class ApiClient {
       if (!response.ok) {
         const errorMessage = data.message || data.error || `HTTP ${response.status}`;
         
+        // Handle authentication errors automatically
+        if (response.status === 401 || response.status === 419) {
+          try {
+            const manager = await getAuthManager();
+            console.warn(`🔒 Auto-logout triggered by ${response.status} response`);
+            await manager.signOut();
+            // Note: authManager.signOut() should handle redirect to /auth-page
+          } catch (authError) {
+            console.error('Failed to auto-logout:', authError);
+          }
+        }
+        
         // Log error
         this.logError(method, url, errorMessage, response.status, traceId);
         
-        // Show user-friendly error
-        this.showUserFriendlyError(response.status, errorMessage);
+        // Show user-friendly error (but don't show auth errors since we're auto-logging out)
+        if (response.status !== 401 && response.status !== 419) {
+          this.showUserFriendlyError(response.status, errorMessage);
+        }
         
         return {
           success: false,

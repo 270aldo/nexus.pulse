@@ -374,7 +374,7 @@ const NutritionLogPageContent = () => {
         .from("registros_nutricion")
         .select("id")
         .eq("user_id", session.user.id)
-        .eq("fecha_registro", format(selectedDate, "yyyy-MM-dd"))
+        .eq("fecha_registro", format(selectedDate || new Date(), "yyyy-MM-dd"))
         .single();
 
       if (findError && findError.code !== 'PGRST116') {
@@ -546,7 +546,7 @@ const NutritionLogPageContent = () => {
         .from("registros_nutricion")
         .select("id")
         .eq("user_id", session.user.id)
-        .eq("fecha_registro", format(selectedDate, "yyyy-MM-dd"))
+        .eq("fecha_registro", format(selectedDate || new Date(), "yyyy-MM-dd"))
         .single();
 
       if (findError && findError.code !== 'PGRST116') {
@@ -694,7 +694,7 @@ const NutritionLogPageContent = () => {
                         contentStyle={{ backgroundColor: 'rgba(30, 41, 59, 0.9)', borderRadius: '0.5rem', borderColor: 'rgba(51, 65, 85, 0.7)'}}
                         itemStyle={{ color: '#e5e7eb' }}
                         labelStyle={{ color: '#cbd5e1' }}
-                        formatter={(value: number | null) => [value !== null ? `${value} kcal` : 'N/A', 'Calorías']}
+                        formatter={(value: any) => [value !== null && value !== undefined ? `${value} kcal` : 'N/A', 'Calorías']}
                     />
                     <Legend wrapperStyle={{ fontSize: '0.8rem'}} />
                     <Line type="monotone" dataKey="calories" stroke="#8b5cf6" strokeWidth={2} dot={{ r: 4 }} activeDot={{ r: 6 }} connectNulls />

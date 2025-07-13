@@ -178,11 +178,11 @@ const DailyCheckinPageContent: React.FC = () => {
     const dailyStatePayload: Omit<DailyStateEntry, "id"> & { user_id: string } = {
       user_id: userId,
       fecha_registro: fechaRegistro,
-      recuperacion_general: recovery || null,
-      horas_sueno: sleepHours ? parseFloat(sleepHours) : null,
-      calidad_sueno_percibida: sleepQuality || null,
-      nivel_energia: energyLevel || null,
-      nivel_enfoque: focusLevel || null,
+      recuperacion_general: recovery || undefined,
+      horas_sueno: sleepHours ? parseFloat(sleepHours) : undefined,
+      calidad_sueno_percibida: sleepQuality || undefined,
+      nivel_energia: energyLevel || undefined,
+      nivel_enfoque: focusLevel || undefined,
     };
 
     try {

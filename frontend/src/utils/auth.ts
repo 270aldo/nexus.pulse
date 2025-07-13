@@ -24,12 +24,21 @@ class AuthManager {
     loading: true,
     error: null
   };
+  private initializationPromise: Promise<void> | null = null;
 
   constructor() {
-    this.initializeAuth();
+    this.initializationPromise = this.initializeAuth();
   }
 
-  private async initializeAuth() {
+  // Method to await full initialization
+  async ready(): Promise<AuthState> {
+    if (this.initializationPromise) {
+      await this.initializationPromise;
+    }
+    return this.currentState;
+  }
+
+  private async initializeAuth(): Promise<void> {
     try {
       // Get initial session
       const { data: { session }, error } = await supabase.auth.getSession();
@@ -41,6 +50,7 @@ class AuthManager {
           loading: false, 
           error: error.message 
         });
+        this.initializationPromise = null; // Mark as complete
         return;
       }
 
@@ -53,7 +63,7 @@ class AuthManager {
 
       // Listen for auth changes
       supabase.auth.onAuthStateChange((event, session) => {
-        console.log('Auth state changed:', event, session?.user?.id);
+        // Note: Removing console.log for production readiness
         
         this.updateState({
           user: session?.user ? this.mapUser(session.user) : null,
@@ -64,13 +74,19 @@ class AuthManager {
       });
 
     } catch (error) {
-      console.error('Auth initialization error:', error);
+      // Log auth errors in development only
+      if (import.meta.env.DEV) {
+        console.error('Auth initialization error:', error);
+      }
       this.updateState({
         user: null,
         session: null,
         loading: false,
         error: error instanceof Error ? error.message : 'Auth initialization failed'
       });
+    } finally {
+      // Mark initialization as complete
+      this.initializationPromise = null;
     }
   }
 
@@ -186,19 +202,42 @@ class AuthManager {
     }
   }
 
-  async refreshSession(): Promise<{ success: boolean; error?: string }> {
-    try {
-      const { data, error } = await supabase.auth.refreshSession();
-
-      if (error) {
-        return { success: false, error: error.message };
+  async refreshSession(maxRetries: number = 3): Promise<{ success: boolean; error?: string }> {
+    let lastError: string = '';
+    
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        const { data, error } = await supabase.auth.refreshSession();
+        if (error) {
+          lastError = error.message;
+          
+          // Don't retry on certain error types
+          if (error.message.includes('invalid_grant') || error.message.includes('token_expired')) {
+            return { success: false, error: lastError };
+          }
+          
+          // Calculate backoff delay (exponential: 1s, 2s, 4s)
+          if (attempt < maxRetries) {
+            const delay = Math.pow(2, attempt - 1) * 1000;
+            await new Promise(resolve => setTimeout(resolve, delay));
+            continue;
+          }
+        } else {
+          return { success: true };
+        }
+      } catch (error) {
+        lastError = error instanceof Error ? error.message : 'Session refresh failed';
+        
+        // Calculate backoff delay for network errors
+        if (attempt < maxRetries) {
+          const delay = Math.pow(2, attempt - 1) * 1000;
+          await new Promise(resolve => setTimeout(resolve, delay));
+          continue;
+        }
       }
-
-      return { success: true };
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Session refresh failed';
-      return { success: false, error: errorMessage };
     }
+    
+    return { success: false, error: `Failed after ${maxRetries} attempts: ${lastError}` };
   }
 
   // Helper methods

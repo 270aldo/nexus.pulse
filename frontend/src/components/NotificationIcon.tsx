@@ -97,7 +97,7 @@ const NotificationIcon: React.FC<NotificationIconProps> = ({ className }) => {
     // Navegar si hay link, después de un breve retardo
     if (notification.link_to) {
       setTimeout(() => {
-        navigate(notification.link_to);
+        navigate(notification.link_to!); // Non-null assertion since we checked above
       }, 100); // Retardo de 100ms para permitir que el popover se cierre
     }
   };

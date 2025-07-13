@@ -7,7 +7,6 @@
   },
   "extends": [
     "eslint:recommended",
-    "@typescript-eslint/recommended",
     "plugin:react-hooks/recommended",
     "plugin:react/recommended"
   ],
@@ -35,7 +34,11 @@
     "@typescript-eslint/no-explicit-any": "warn",
     "@typescript-eslint/ban-ts-comment": "warn",
     "prefer-const": "error",
-    "no-var": "error"
+    "no-var": "error",
+    // Production safety rules
+    "no-console": "warn",
+    "no-debugger": "error",
+    "no-alert": "warn"
   },
   "settings": {
     "react": {
