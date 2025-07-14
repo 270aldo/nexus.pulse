@@ -387,3 +387,746 @@ export const fetchRelatedContentItems = async (
   );
 };
 
+// ==================================================
+// FUNCIONES PARA SPARKLINES (7 DÍAS DE DATOS)
+// ==================================================
+
+interface SparklineDataPoint {
+  date: string;
+  value: number | null;
+}
+
+// Helper para generar fechas de los últimos 7 días
+const getLast7Days = (): string[] => {
+  const dates = [];
+  for (let i = 6; i >= 0; i--) {
+    const date = new Date();
+    date.setDate(date.getDate() - i);
+    dates.push(date.toISOString().split('T')[0]);
+  }
+  return dates;
+};
+
+// Obtener datos de sueño de los últimos 7 días
+export const fetchSleep7DayData = async (userId: string): Promise<SparklineDataPoint[]> => {
+  const last7Days = getLast7Days();
+  const sevenDaysAgo = last7Days[0];
+  
+  const { data, error } = await supabase
+    .from('biometric_entries')
+    .select('value_numeric, entry_date')
+    .eq('user_id', userId)
+    .eq('metric_type', 'sleep_hours')
+    .gte('entry_date', sevenDaysAgo)
+    .order('entry_date', { ascending: true });
+
+  if (error) {
+    console.error('Error fetching sleep 7-day data:', error);
+    return last7Days.map(date => ({ date, value: null }));
+  }
+
+  // Mapear datos existentes y rellenar días faltantes
+  const dataMap = new Map(data?.map(item => [item.entry_date, parseFloat(item.value_numeric)]) || []);
+  
+  return last7Days.map(date => ({
+    date,
+    value: dataMap.get(date) || null
+  }));
+};
+
+// Obtener datos de pasos de los últimos 7 días
+export const fetchSteps7DayData = async (userId: string): Promise<SparklineDataPoint[]> => {
+  const last7Days = getLast7Days();
+  const sevenDaysAgo = last7Days[0];
+  
+  const { data, error } = await supabase
+    .from('biometric_entries')
+    .select('value_numeric, entry_date')
+    .eq('user_id', userId)
+    .eq('metric_type', 'steps')
+    .gte('entry_date', sevenDaysAgo)
+    .order('entry_date', { ascending: true });
+
+  if (error) {
+    console.error('Error fetching steps 7-day data:', error);
+    return last7Days.map(date => ({ date, value: null }));
+  }
+
+  const dataMap = new Map(data?.map(item => [item.entry_date, parseInt(item.value_numeric)]) || []);
+  
+  return last7Days.map(date => ({
+    date,
+    value: dataMap.get(date) || null
+  }));
+};
+
+// Obtener datos de HRV de los últimos 7 días
+export const fetchHRV7DayData = async (userId: string): Promise<SparklineDataPoint[]> => {
+  const last7Days = getLast7Days();
+  const sevenDaysAgo = last7Days[0];
+  
+  const { data, error } = await supabase
+    .from('biometric_entries')
+    .select('value_numeric, entry_date')
+    .eq('user_id', userId)
+    .eq('metric_type', 'hrv')
+    .gte('entry_date', sevenDaysAgo)
+    .order('entry_date', { ascending: true });
+
+  if (error) {
+    console.error('Error fetching HRV 7-day data:', error);
+    return last7Days.map(date => ({ date, value: null }));
+  }
+
+  const dataMap = new Map(data?.map(item => [item.entry_date, parseFloat(item.value_numeric)]) || []);
+  
+  return last7Days.map(date => ({
+    date,
+    value: dataMap.get(date) || null
+  }));
+};
+
+// Obtener datos de peso de los últimos 7 días
+export const fetchWeight7DayData = async (userId: string): Promise<SparklineDataPoint[]> => {
+  const last7Days = getLast7Days();
+  const sevenDaysAgo = last7Days[0];
+  
+  const { data, error } = await supabase
+    .from('biometric_entries')
+    .select('value_numeric, entry_date')
+    .eq('user_id', userId)
+    .eq('metric_type', 'weight')
+    .gte('entry_date', sevenDaysAgo)
+    .order('entry_date', { ascending: true });
+
+  if (error) {
+    console.error('Error fetching weight 7-day data:', error);
+    return last7Days.map(date => ({ date, value: null }));
+  }
+
+  const dataMap = new Map(data?.map(item => [item.entry_date, parseFloat(item.value_numeric)]) || []);
+  
+  return last7Days.map(date => ({
+    date,
+    value: dataMap.get(date) || null
+  }));
+};
+
+// Obtener datos de estado de ánimo de los últimos 7 días
+export const fetchMood7DayData = async (userId: string): Promise<SparklineDataPoint[]> => {
+  const last7Days = getLast7Days();
+  const sevenDaysAgo = last7Days[0];
+  
+  const { data, error } = await supabase
+    .from('registros_bienestar')
+    .select('estado_animo, fecha_registro')
+    .eq('user_id', userId)
+    .gte('fecha_registro', sevenDaysAgo)
+    .not('estado_animo', 'is', null)
+    .order('fecha_registro', { ascending: true });
+
+  if (error) {
+    console.error('Error fetching mood 7-day data:', error);
+    return last7Days.map(date => ({ date, value: null }));
+  }
+
+  // Agrupar por fecha y calcular promedio si hay múltiples registros por día
+  const dataByDate = new Map<string, number[]>();
+  data?.forEach(item => {
+    const date = item.fecha_registro.split('T')[0];
+    if (!dataByDate.has(date)) {
+      dataByDate.set(date, []);
+    }
+    dataByDate.get(date)!.push(item.estado_animo);
+  });
+
+  return last7Days.map(date => {
+    const dayData = dataByDate.get(date);
+    if (dayData && dayData.length > 0) {
+      const average = dayData.reduce((sum, val) => sum + val, 0) / dayData.length;
+      return { date, value: average };
+    }
+    return { date, value: null };
+  });
+};
+
+// Obtener datos de estrés de los últimos 7 días
+export const fetchStress7DayData = async (userId: string): Promise<SparklineDataPoint[]> => {
+  const last7Days = getLast7Days();
+  const sevenDaysAgo = last7Days[0];
+  
+  const { data, error } = await supabase
+    .from('registros_bienestar')
+    .select('nivel_estres, fecha_registro')
+    .eq('user_id', userId)
+    .gte('fecha_registro', sevenDaysAgo)
+    .not('nivel_estres', 'is', null)
+    .order('fecha_registro', { ascending: true });
+
+  if (error) {
+    console.error('Error fetching stress 7-day data:', error);
+    return last7Days.map(date => ({ date, value: null }));
+  }
+
+  const dataByDate = new Map<string, number[]>();
+  data?.forEach(item => {
+    const date = item.fecha_registro.split('T')[0];
+    if (!dataByDate.has(date)) {
+      dataByDate.set(date, []);
+    }
+    dataByDate.get(date)!.push(item.nivel_estres);
+  });
+
+  return last7Days.map(date => {
+    const dayData = dataByDate.get(date);
+    if (dayData && dayData.length > 0) {
+      const average = dayData.reduce((sum, val) => sum + val, 0) / dayData.length;
+      return { date, value: average };
+    }
+    return { date, value: null };
+  });
+};
+
+// Función consolidada para obtener todos los datos de sparklines
+export const fetchAllSparklineData = async (userId: string) => {
+  if (!userId) {
+    const emptyData = getLast7Days().map(date => ({ date, value: null }));
+    return {
+      sleep: emptyData,
+      steps: emptyData,
+      hrv: emptyData,
+      weight: emptyData,
+      mood: emptyData,
+      stress: emptyData
+    };
+  }
+
+  try {
+    const [sleepData, stepsData, hrvData, weightData, moodData, stressData] = await Promise.all([
+      fetchSleep7DayData(userId).catch(() => getLast7Days().map(date => ({ date, value: null }))),
+      fetchSteps7DayData(userId).catch(() => getLast7Days().map(date => ({ date, value: null }))),
+      fetchHRV7DayData(userId).catch(() => getLast7Days().map(date => ({ date, value: null }))),
+      fetchWeight7DayData(userId).catch(() => getLast7Days().map(date => ({ date, value: null }))),
+      fetchMood7DayData(userId).catch(() => getLast7Days().map(date => ({ date, value: null }))),
+      fetchStress7DayData(userId).catch(() => getLast7Days().map(date => ({ date, value: null })))
+    ]);
+
+    return {
+      sleep: sleepData,
+      steps: stepsData,
+      hrv: hrvData,
+      weight: weightData,
+      mood: moodData,
+      stress: stressData
+    };
+  } catch (error) {
+    console.error('Error fetching sparkline data:', error);
+    const emptyData = getLast7Days().map(date => ({ date, value: null }));
+    return {
+      sleep: emptyData,
+      steps: emptyData,
+      hrv: emptyData,
+      weight: emptyData,
+      mood: emptyData,
+      stress: emptyData
+    };
+  }
+};
+
+// ==================================================
+// SISTEMA DE PROGRAMAS PERSONALIZADOS
+// ==================================================
+
+// INTERFACES FOR PROGRAM SYSTEM
+export interface UserProgram {
+  id: string;
+  user_id: string;
+  program_name: string;
+  program_type: 'PRIME' | 'LONGEVITY' | 'NUTRITION' | 'CUSTOM' | 'HYBRID';
+  program_description?: string;
+  start_date: string;
+  target_end_date?: string;
+  estimated_duration_weeks?: number;
+  status: 'ACTIVE' | 'PAUSED' | 'COMPLETED' | 'ARCHIVED';
+  completion_percentage: number;
+  goals?: any;
+  preferences?: any;
+  restrictions?: any;
+  ai_configuration?: any;
+  auto_adjustment_enabled: boolean;
+  created_at: string;
+  updated_at: string;
+  created_by_ai: boolean;
+}
+
+export interface ProgramProgress {
+  id: string;
+  user_program_id: string;
+  user_id: string;
+  week_number: number;
+  date_recorded: string;
+  weekly_completion_rate?: number;
+  adherence_score?: number;
+  training_sessions_completed: number;
+  training_sessions_planned: number;
+  nutrition_compliance_score?: number;
+  wellness_check_ins_completed: number;
+  ai_assessment?: any;
+  ai_recommendations?: any;
+  user_feedback?: string;
+  user_satisfaction_rating?: number;
+  energy_level?: number;
+  motivation_level?: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ProgramMilestone {
+  id: string;
+  user_program_id: string;
+  user_id: string;
+  milestone_name: string;
+  milestone_type: 'WEEKLY' | 'MONTHLY' | 'CUSTOM' | 'AI_GENERATED';
+  description?: string;
+  target_date?: string;
+  week_number?: number;
+  status: 'PENDING' | 'ACHIEVED' | 'MISSED' | 'RESCHEDULED';
+  achieved_date?: string;
+  target_metric_type?: string;
+  target_value?: number;
+  achieved_value?: number;
+  unit?: string;
+  reward_type?: string;
+  reward_data?: any;
+  celebration_message?: string;
+  ai_generated: boolean;
+  ai_difficulty_rating?: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ProgramContentSequence {
+  id: string;
+  user_program_id: string;
+  content_item_id: string;
+  sequence_order: number;
+  week_number?: number;
+  day_of_week?: number;
+  prerequisite_content_ids?: string[];
+  unlock_conditions?: any;
+  is_mandatory: boolean;
+  difficulty_level?: number;
+  estimated_completion_time_minutes?: number;
+  status: 'LOCKED' | 'AVAILABLE' | 'IN_PROGRESS' | 'COMPLETED' | 'SKIPPED';
+  unlocked_at?: string;
+  started_at?: string;
+  completed_at?: string;
+  ai_recommended: boolean;
+  ai_adaptation_reason?: string;
+  user_engagement_score?: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ProgramAIInteraction {
+  id: string;
+  user_program_id: string;
+  user_id: string;
+  interaction_type: 'PROACTIVE_RECOMMENDATION' | 'MILESTONE_CELEBRATION' | 'COURSE_CORRECTION' | 'MOTIVATION_BOOST';
+  trigger_event?: string;
+  ai_message: string;
+  action_recommendations?: any;
+  priority_level: number;
+  program_context?: any;
+  user_data_snapshot?: any;
+  user_response?: string;
+  user_action_taken: boolean;
+  effectiveness_rating?: number;
+  created_at: string;
+  responded_at?: string;
+}
+
+export interface CreateProgramRequest {
+  program_name: string;
+  program_type: UserProgram['program_type'];
+  program_description?: string;
+  estimated_duration_weeks?: number;
+  goals?: any;
+  preferences?: any;
+  restrictions?: any;
+}
+
+export interface ProgramDashboardData {
+  activeProgram: UserProgram | null;
+  currentWeekProgress: ProgramProgress | null;
+  upcomingMilestones: ProgramMilestone[];
+  recentAIInteractions: ProgramAIInteraction[];
+  nextContentItems: (ProgramContentSequence & { content_item: any })[];
+  overallStats: {
+    totalPrograms: number;
+    completedPrograms: number;
+    currentStreak: number;
+    totalMilestonesAchieved: number;
+  };
+}
+
+// FUNCIONES PARA USER PROGRAMS
+export const createUserProgram = async (userId: string, programData: CreateProgramRequest): Promise<UserProgram> => {
+  const { data, error } = await supabase
+    .from('user_programs')
+    .insert([{
+      user_id: userId,
+      ...programData,
+      start_date: new Date().toISOString().split('T')[0],
+      status: 'ACTIVE' as const,
+      completion_percentage: 0,
+      auto_adjustment_enabled: true,
+      created_by_ai: false
+    }])
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Error creating user program:', error);
+    throw error;
+  }
+
+  return data;
+};
+
+export const getUserPrograms = async (userId: string): Promise<UserProgram[]> => {
+  const { data, error } = await supabase
+    .from('user_programs')
+    .select('*')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('Error fetching user programs:', error);
+    throw error;
+  }
+
+  return data || [];
+};
+
+export const getActiveUserProgram = async (userId: string): Promise<UserProgram | null> => {
+  const { data, error } = await supabase
+    .from('user_programs')
+    .select('*')
+    .eq('user_id', userId)
+    .eq('status', 'ACTIVE')
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (error) {
+    console.error('Error fetching active user program:', error);
+    throw error;
+  }
+
+  return data;
+};
+
+export const updateProgramProgress = async (
+  userProgramId: string, 
+  weekNumber: number, 
+  progressData: Partial<ProgramProgress>
+): Promise<ProgramProgress> => {
+  const { data, error } = await supabase
+    .from('program_progress')
+    .upsert([{
+      user_program_id: userProgramId,
+      week_number: weekNumber,
+      date_recorded: new Date().toISOString().split('T')[0],
+      ...progressData
+    }])
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Error updating program progress:', error);
+    throw error;
+  }
+
+  return data;
+};
+
+export const getProgramProgress = async (userProgramId: string): Promise<ProgramProgress[]> => {
+  const { data, error } = await supabase
+    .from('program_progress')
+    .select('*')
+    .eq('user_program_id', userProgramId)
+    .order('week_number', { ascending: true });
+
+  if (error) {
+    console.error('Error fetching program progress:', error);
+    throw error;
+  }
+
+  return data || [];
+};
+
+export const getCurrentWeekProgress = async (userProgramId: string): Promise<ProgramProgress | null> => {
+  // Calculate current week number based on program start date
+  const program = await supabase
+    .from('user_programs')
+    .select('start_date')
+    .eq('id', userProgramId)
+    .single();
+
+  if (program.error || !program.data) {
+    console.error('Error fetching program for week calculation:', program.error);
+    return null;
+  }
+
+  const startDate = new Date(program.data.start_date);
+  const currentDate = new Date();
+  const weeksDiff = Math.floor((currentDate.getTime() - startDate.getTime()) / (7 * 24 * 60 * 60 * 1000)) + 1;
+
+  const { data, error } = await supabase
+    .from('program_progress')
+    .select('*')
+    .eq('user_program_id', userProgramId)
+    .eq('week_number', weeksDiff)
+    .maybeSingle();
+
+  if (error) {
+    console.error('Error fetching current week progress:', error);
+    return null;
+  }
+
+  return data;
+};
+
+// FUNCIONES PARA MILESTONES
+export const createProgramMilestone = async (milestoneData: Omit<ProgramMilestone, 'id' | 'created_at' | 'updated_at'>): Promise<ProgramMilestone> => {
+  const { data, error } = await supabase
+    .from('program_milestones')
+    .insert([milestoneData])
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Error creating program milestone:', error);
+    throw error;
+  }
+
+  return data;
+};
+
+export const getUpcomingMilestones = async (userProgramId: string, limit = 5): Promise<ProgramMilestone[]> => {
+  const { data, error } = await supabase
+    .from('program_milestones')
+    .select('*')
+    .eq('user_program_id', userProgramId)
+    .in('status', ['PENDING'])
+    .order('target_date', { ascending: true })
+    .limit(limit);
+
+  if (error) {
+    console.error('Error fetching upcoming milestones:', error);
+    throw error;
+  }
+
+  return data || [];
+};
+
+export const achieveMilestone = async (milestoneId: string, achievedValue?: number): Promise<ProgramMilestone> => {
+  const { data, error } = await supabase
+    .from('program_milestones')
+    .update({
+      status: 'ACHIEVED',
+      achieved_date: new Date().toISOString().split('T')[0],
+      achieved_value: achievedValue
+    })
+    .eq('id', milestoneId)
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Error achieving milestone:', error);
+    throw error;
+  }
+
+  return data;
+};
+
+// FUNCIONES PARA CONTENT SEQUENCES
+export const getProgramContentSequence = async (userProgramId: string): Promise<(ProgramContentSequence & { content_item: any })[]> => {
+  const { data, error } = await supabase
+    .from('program_content_sequences')
+    .select(`
+      *,
+      content_item:content_items(
+        id,
+        title,
+        content_type,
+        summary,
+        thumbnail_url,
+        estimated_read_time_minutes,
+        duration_minutes
+      )
+    `)
+    .eq('user_program_id', userProgramId)
+    .order('sequence_order', { ascending: true });
+
+  if (error) {
+    console.error('Error fetching program content sequence:', error);
+    throw error;
+  }
+
+  return data || [];
+};
+
+export const getNextAvailableContent = async (userProgramId: string, limit = 3): Promise<(ProgramContentSequence & { content_item: any })[]> => {
+  const { data, error } = await supabase
+    .from('program_content_sequences')
+    .select(`
+      *,
+      content_item:content_items(
+        id,
+        title,
+        content_type,
+        summary,
+        thumbnail_url,
+        estimated_read_time_minutes,
+        duration_minutes
+      )
+    `)
+    .eq('user_program_id', userProgramId)
+    .in('status', ['AVAILABLE', 'IN_PROGRESS'])
+    .order('sequence_order', { ascending: true })
+    .limit(limit);
+
+  if (error) {
+    console.error('Error fetching next available content:', error);
+    throw error;
+  }
+
+  return data || [];
+};
+
+export const updateContentStatus = async (
+  userProgramId: string, 
+  contentItemId: string, 
+  status: ProgramContentSequence['status']
+): Promise<ProgramContentSequence> => {
+  const updateData: any = { status };
+  
+  if (status === 'IN_PROGRESS') {
+    updateData.started_at = new Date().toISOString();
+  } else if (status === 'COMPLETED') {
+    updateData.completed_at = new Date().toISOString();
+  }
+
+  const { data, error } = await supabase
+    .from('program_content_sequences')
+    .update(updateData)
+    .eq('user_program_id', userProgramId)
+    .eq('content_item_id', contentItemId)
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Error updating content status:', error);
+    throw error;
+  }
+
+  return data;
+};
+
+// FUNCIONES PARA AI INTERACTIONS
+export const createAIInteraction = async (interactionData: Omit<ProgramAIInteraction, 'id' | 'created_at'>): Promise<ProgramAIInteraction> => {
+  const { data, error } = await supabase
+    .from('program_ai_interactions')
+    .insert([interactionData])
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Error creating AI interaction:', error);
+    throw error;
+  }
+
+  return data;
+};
+
+export const getRecentAIInteractions = async (userProgramId: string, limit = 10): Promise<ProgramAIInteraction[]> => {
+  const { data, error } = await supabase
+    .from('program_ai_interactions')
+    .select('*')
+    .eq('user_program_id', userProgramId)
+    .order('created_at', { ascending: false })
+    .limit(limit);
+
+  if (error) {
+    console.error('Error fetching recent AI interactions:', error);
+    throw error;
+  }
+
+  return data || [];
+};
+
+// FUNCIÓN CONSOLIDADA PARA DASHBOARD
+export const getProgramDashboardData = async (userId: string): Promise<ProgramDashboardData> => {
+  try {
+    // Get active program
+    const activeProgram = await getActiveUserProgram(userId);
+    
+    if (!activeProgram) {
+      return {
+        activeProgram: null,
+        currentWeekProgress: null,
+        upcomingMilestones: [],
+        recentAIInteractions: [],
+        nextContentItems: [],
+        overallStats: {
+          totalPrograms: 0,
+          completedPrograms: 0,
+          currentStreak: 0,
+          totalMilestonesAchieved: 0
+        }
+      };
+    }
+
+    // Get current week progress
+    const currentWeekProgress = await getCurrentWeekProgress(activeProgram.id);
+    
+    // Get upcoming milestones
+    const upcomingMilestones = await getUpcomingMilestones(activeProgram.id);
+    
+    // Get recent AI interactions
+    const recentAIInteractions = await getRecentAIInteractions(activeProgram.id);
+    
+    // Get next content items
+    const nextContentItems = await getNextAvailableContent(activeProgram.id);
+    
+    // Get overall stats
+    const allPrograms = await getUserPrograms(userId);
+    const completedPrograms = allPrograms.filter(p => p.status === 'COMPLETED');
+    
+    const { data: totalMilestones } = await supabase
+      .from('program_milestones')
+      .select('id')
+      .eq('user_id', userId)
+      .eq('status', 'ACHIEVED');
+
+    return {
+      activeProgram,
+      currentWeekProgress,
+      upcomingMilestones,
+      recentAIInteractions,
+      nextContentItems,
+      overallStats: {
+        totalPrograms: allPrograms.length,
+        completedPrograms: completedPrograms.length,
+        currentStreak: 0, // TODO: Calculate based on daily check-ins
+        totalMilestonesAchieved: totalMilestones?.length || 0
+      }
+    };
+  } catch (error) {
+    console.error('Error fetching program dashboard data:', error);
+    throw error;
+  }
+};
+

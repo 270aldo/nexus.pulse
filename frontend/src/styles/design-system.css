@@ -304,6 +304,28 @@
   margin-left: var(--ngx-sidebar-collapsed);
 }
 
+
+/* 🌑 SCROLLBARS OSCUROS GLOBALES */
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+*::-webkit-scrollbar-track {
+  background: var(--ngx-neutral-900);
+}
+
+*::-webkit-scrollbar-thumb {
+  background: var(--ngx-neutral-700);
+  border-radius: 4px;
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--ngx-neutral-700) var(--ngx-neutral-900);
+}
+
 @media (min-width: 768px) {
   .md\:w-18 {
     width: var(--ngx-sidebar-collapsed);

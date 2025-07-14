@@ -213,15 +213,18 @@ export const SideNavigation: React.FC = () => {
                 <Tooltip key={item.id} content={item.label} isVisible={true}>
                   <button
                     onClick={() => handleNavigation(item.path)}
-                    className={`w-full flex items-center justify-center py-3 mx-2 mb-2 rounded-lg transition-all duration-300 group relative ${
+                    className={`w-full flex items-center justify-center py-3 mx-2 mb-2 rounded-lg transition-all duration-250 ease-out group relative ${
                       isActive 
-                        ? 'bg-violet-600/20 text-violet-400 shadow-lg shadow-violet-500/25' 
+                        ? 'bg-gradient-to-r from-violet-500/20 via-violet-600/15 to-transparent text-violet-400 shadow-lg shadow-violet-500/30' 
                         : 'text-neutral-400 hover:text-neutral-300 hover:bg-neutral-800/50 hover:scale-105'
                     }`}
+                    style={isActive ? {
+                      boxShadow: '0 0 20px rgba(139, 92, 246, 0.15), 0 0 40px rgba(139, 92, 246, 0.1), inset 0 1px 0 rgba(139, 92, 246, 0.2)'
+                    } : {}}
                   >
-                    {/* Active indicator */}
+                    {/* Enhanced Active indicator with glow */}
                     {isActive && (
-                      <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-violet-500 rounded-r-full" />
+                      <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-violet-500 rounded-r-full shadow-[0_0_8px_rgba(139,92,246,0.8)]" />
                     )}
                     
                     <div className={`transition-all duration-300 ${
@@ -238,15 +241,18 @@ export const SideNavigation: React.FC = () => {
               <button
                 key={item.id}
                 onClick={() => handleNavigation(item.path)}
-                className={`w-full flex items-center px-6 py-3 text-left transition-all duration-300 group relative ${
+                className={`w-full flex items-center px-6 py-3 text-left transition-all duration-250 ease-out group relative ${
                   isActive 
-                    ? 'bg-violet-600/20 text-violet-400 border-r-2 border-violet-500 shadow-lg shadow-violet-500/10' 
+                    ? 'bg-gradient-to-r from-violet-500/20 via-violet-600/15 to-transparent text-violet-400' 
                     : 'text-neutral-400 hover:text-neutral-300 hover:bg-neutral-800/50 hover:translate-x-1'
                 }`}
+                style={isActive ? {
+                  boxShadow: '0 0 20px rgba(139, 92, 246, 0.15), 0 0 40px rgba(139, 92, 246, 0.1), inset 0 1px 0 rgba(139, 92, 246, 0.2)'
+                } : {}}
               >
-                {/* Active indicator glow */}
+                {/* Enhanced Active indicator with glow */}
                 {isActive && (
-                  <div className="absolute inset-0 bg-gradient-to-r from-violet-500/10 to-transparent" />
+                  <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-10 bg-violet-500 rounded-r-full shadow-[0_0_12px_rgba(139,92,246,0.8)]" />
                 )}
                 
                 <div className={`mr-3 transition-all duration-300 ${
@@ -259,7 +265,7 @@ export const SideNavigation: React.FC = () => {
                 </span>
                 
                 {/* Hover glow effect */}
-                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-gradient-to-r from-violet-500/10 to-transparent" />
+                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-all duration-250 ease-out bg-gradient-to-r from-violet-500/10 to-transparent" />
               </button>
             );
           })}

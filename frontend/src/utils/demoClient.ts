@@ -116,3 +116,40 @@ export const demoAuth = {
   signOut: demoClient.signOut.bind(demoClient),
   onAuthStateChange: demoClient.onAuthStateChange.bind(demoClient)
 };
+
+// Demo Client para generar datos de prueba de sparklines
+export const generateDemoSparklineData = () => {
+  const dates = [];
+  for (let i = 6; i >= 0; i--) {
+    const date = new Date();
+    date.setDate(date.getDate() - i);
+    dates.push(date.toISOString().split('T')[0]);
+  }
+
+  return {
+    sleep: dates.map((date, index) => ({
+      date,
+      value: Math.random() > 0.3 ? 6 + Math.random() * 3 : null // 6-9 horas de sueño, algunos días sin datos
+    })),
+    steps: dates.map((date, index) => ({
+      date,
+      value: Math.random() > 0.2 ? 5000 + Math.random() * 10000 : null // 5k-15k pasos
+    })),
+    hrv: dates.map((date, index) => ({
+      date,
+      value: Math.random() > 0.4 ? 30 + Math.random() * 50 : null // 30-80 ms HRV
+    })),
+    weight: dates.map((date, index) => ({
+      date,
+      value: Math.random() > 0.7 ? 70 + Math.random() * 20 : null // 70-90 kg, pocos datos
+    })),
+    mood: dates.map((date, index) => ({
+      date,
+      value: Math.random() > 0.5 ? 5 + Math.random() * 5 : null // 5-10 mood score
+    })),
+    stress: dates.map((date, index) => ({
+      date,
+      value: Math.random() > 0.5 ? 1 + Math.random() * 8 : null // 1-9 stress level
+    }))
+  };
+};

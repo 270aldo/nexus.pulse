@@ -5,7 +5,7 @@ import KPIValueCard from "../components/KPIValueCard"; // Import the new KPI car
 import SleepTrendSection from "../components/SleepTrendSection"; // Import SleepTrendSection
 import HrvTrendSection from "../components/HrvTrendSection"; // Import HrvTrendSection
 import { Dumbbell, Apple, ClipboardList, Smile, HeartPulse, CheckCircle2, Bed, Activity as ActivityIcon, Footprints, BarChartHorizontalBig, CalendarDays, Brain as BrainIconLucide, Users, TrendingUp, AlertTriangle, Bot, Target, LayoutDashboard, Utensils, BarChart3, ChevronRight, Settings, LogOut, BookOpenText, Info, MessageCircleWarning, Award, Lightbulb, BellRing, Link as LinkIcon, Download as DownloadIcon } from 'lucide-react'; // Added DownloadIcon
-import { supabase } from "../utils/supabaseClient"; // Import supabase client
+import { supabase, fetchAllSparklineData } from "../utils/supabaseClient"; // Import supabase client
 import { subDays, format, eachDayOfInterval, startOfDay, parseISO, isValid } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { ResponsiveContainer, LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts'; // Added Recharts imports (AreaChart, Area)
@@ -16,6 +16,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { apiClient } from "../utils/apiClient";
 import { ThemeToggle } from "../components/ThemeToggle";
+import AnalyticsTab from "../components/AnalyticsTab";
+import ReportsTab from "../components/ReportsTab";
+import NotificationsTab from "../components/NotificationsTab";
 
 
 const DashboardPageContent: React.FC = () => { // Renombrar el contenido original
@@ -54,6 +57,29 @@ interface SleepTrendData {
   hours: number | null; // Horas de sueño
 }
 const [sleep7DayTrend, setSleep7DayTrend] = useState<SleepTrendData[]>([]);
+
+// Estados para sparklines
+interface SparklineDataPoint {
+  date: string;
+  value: number | null;
+}
+
+const [sparklineData, setSparklineData] = useState<{
+  sleep: SparklineDataPoint[];
+  steps: SparklineDataPoint[];
+  hrv: SparklineDataPoint[];
+  weight: SparklineDataPoint[];
+  mood: SparklineDataPoint[];
+  stress: SparklineDataPoint[];
+}>({
+  sleep: [],
+  steps: [],
+  hrv: [],
+  weight: [],
+  mood: [],
+  stress: []
+});
+const [isLoadingSparklines, setIsLoadingSparklines] = useState<boolean>(true);
 
   // useEffect para obtener el userId - REMOVED as currentUserId comes from AppContext
   // useEffect(() => {
@@ -216,6 +242,21 @@ const [sleep7DayTrend, setSleep7DayTrend] = useState<SleepTrendData[]>([]);
 
     fetchBiometrics();
 
+    // Cargar datos de sparklines
+    const loadSparklineData = async () => {
+      setIsLoadingSparklines(true);
+      try {
+        const sparklines = await fetchAllSparklineData(currentUserId);
+        setSparklineData(sparklines);
+      } catch (error) {
+        console.error('Error loading sparkline data:', error);
+      } finally {
+        setIsLoadingSparklines(false);
+      }
+    };
+
+    loadSparklineData();
+
     const fetchAiCoachMessages = async () => {
       if (!currentUserId) return; // No need to fetch if no user
       setIsLoadingAiCoachMessages(true);
@@ -294,7 +335,12 @@ const [sleep7DayTrend, setSleep7DayTrend] = useState<SleepTrendData[]>([]);
                   unit="h"
                   icon={Bed}
                   iconColor="text-blue-400"
-                  isLoading={isLoadingMetrics}
+                  isLoading={isLoadingMetrics || isLoadingSparklines}
+                  showSparkline={true}
+                  sparklineData={sparklineData.sleep}
+                  metricType="sleep"
+                  onSparklineAction={() => navigate('/biometric-tracking')}
+                  sparklineActionText="Registrar sueño"
                 />
                 <KPIValueCard 
                   title="HRV Promedio"
@@ -302,14 +348,24 @@ const [sleep7DayTrend, setSleep7DayTrend] = useState<SleepTrendData[]>([]);
                   unit="ms"
                   icon={BarChartHorizontalBig} 
                   iconColor="text-purple-400"
-                  isLoading={isLoadingMetrics}
+                  isLoading={isLoadingMetrics || isLoadingSparklines}
+                  showSparkline={true}
+                  sparklineData={sparklineData.hrv}
+                  metricType="hrv"
+                  onSparklineAction={() => navigate('/biometric-tracking')}
+                  sparklineActionText="Medir HRV"
                 />
                 <KPIValueCard 
                   title="Pasos Hoy"
                   value={steps}
                   icon={Footprints}
                   iconColor="text-green-400"
-                  isLoading={isLoadingMetrics}
+                  isLoading={isLoadingMetrics || isLoadingSparklines}
+                  showSparkline={true}
+                  sparklineData={sparklineData.steps}
+                  metricType="steps"
+                  onSparklineAction={() => navigate('/biometric-tracking')}
+                  sparklineActionText="Conectar dispositivo"
                 />
                 <KPIValueCard 
                   title="Adh. Entrenamiento"
@@ -485,10 +541,16 @@ const [sleep7DayTrend, setSleep7DayTrend] = useState<SleepTrendData[]>([]);
               </div>
             </div>
           </TabsContent>
-          {/* Placeholder for other TabsContent if needed in future */}
-          <TabsContent value="analiticas"><p className="text-center text-neutral-500 py-12">Contenido de Analíticas (Próximamente)</p></TabsContent>
-          <TabsContent value="reportes"><p className="text-center text-neutral-500 py-12">Contenido de Reportes (Próximamente)</p></TabsContent>
-          <TabsContent value="notificaciones"><p className="text-center text-neutral-500 py-12">Contenido de Notificaciones (Próximamente)</p></TabsContent>
+          {/* Analytics Tab */}
+          <TabsContent value="analiticas">
+            <AnalyticsTab />
+          </TabsContent>
+          <TabsContent value="reportes">
+            <ReportsTab />
+          </TabsContent>
+          <TabsContent value="notificaciones">
+            <NotificationsTab />
+          </TabsContent>
         </Tabs>
 
       </header>

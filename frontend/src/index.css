@@ -189,6 +189,136 @@
     -webkit-transform: translateZ(0);
     will-change: transform;
   }
+
+  /* ===== MICRO-INTERACCIONES PARA NGX PULSE ===== */
+  
+  /* Depth effect for cards */
+  .card-hover-depth {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .card-hover-depth:hover {
+    transform: translateY(-2px);
+    box-shadow: 
+      0 10px 25px -5px rgba(0, 0, 0, 0.3),
+      0 10px 10px -5px rgba(0, 0, 0, 0.1);
+  }
+
+  /* Success pulse animation for data registration */
+  .success-pulse {
+    animation: success-pulse 0.6s ease-out;
+  }
+
+  @keyframes success-pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+  }
+
+  /* Sparkline entrance animation */
+  .sparkline-enter {
+    animation: sparkline-enter 0.6s ease-out;
+  }
+
+  @keyframes sparkline-enter {
+    0% { 
+      opacity: 0;
+      transform: translateY(4px);
+    }
+    100% { 
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Gentle bounce for empty states */
+  .empty-state-bounce {
+    animation: empty-state-bounce 3s ease-in-out infinite;
+  }
+
+  @keyframes empty-state-bounce {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-1px); }
+  }
+
+  /* Button press feedback */
+  .button-press:active {
+    transform: scale(0.97);
+    transition: transform 0.1s ease-out;
+  }
+
+  /* Loading state for metrics */
+  .metric-loading {
+    animation: metric-loading 2s ease-in-out infinite;
+  }
+
+  @keyframes metric-loading {
+    0%, 100% { opacity: 0.4; transform: scale(1); }
+    50% { opacity: 0.8; transform: scale(1.02); }
+  }
+
+  /* Hover glow effect */
+  .hover-glow {
+    transition: all 0.3s ease;
+  }
+
+  .hover-glow:hover {
+    box-shadow: 
+      0 0 20px rgba(139, 92, 246, 0.15),
+      0 0 40px rgba(139, 92, 246, 0.1);
+  }
+
+  /* Data point pulse */
+  .data-point-pulse {
+    animation: data-point-pulse 1.5s ease-in-out infinite;
+  }
+
+  @keyframes data-point-pulse {
+    0%, 100% { opacity: 0.7; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.1); }
+  }
+
+  /* Chart entrance */
+  .chart-entrance {
+    animation: chart-entrance 0.8s ease-out;
+  }
+
+  @keyframes chart-entrance {
+    0% { 
+      opacity: 0;
+      transform: translateX(-20px);
+    }
+    100% { 
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  /* Notification slide in */
+  .notification-slide-in {
+    animation: notification-slide-in 0.5s ease-out;
+  }
+
+  @keyframes notification-slide-in {
+    0% { 
+      opacity: 0;
+      transform: translateX(100%);
+    }
+    100% { 
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  /* Breathing animation for active elements */
+  .breathing {
+    animation: breathing 3s ease-in-out infinite;
+  }
+
+  @keyframes breathing {
+    0%, 100% { opacity: 0.8; }
+    50% { opacity: 1; }
+  }
 }
 
 /* Critical performance CSS */

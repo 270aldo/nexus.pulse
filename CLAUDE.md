@@ -50,6 +50,13 @@ pytest                                       # Run tests
 - **State Management**: Zustand stores in `frontend/src/store/`
 - **Routing**: React Router v6 with protected routes in `frontend/src/App.tsx`
 
+### Dashboard System
+- **Multi-tab Dashboard**: Resumen, Analíticas, Reportes, Notificaciones
+- **Sparkline Charts**: Real-time mini-charts for KPI metrics (sleep, HRV, steps)
+- **Advanced Analytics**: Time-series analysis with Recharts integration
+- **PDF Report Generation**: Automated health reports with jsPDF
+- **Notification Center**: Comprehensive alert system with categorization
+
 ### Backend Architecture
 - **API Routes** (`backend/app/apis/`): 30+ endpoints organized by feature (auth, users, health_data, etc.)
 - **Services** (`backend/app/services/`): Business logic layer
@@ -85,6 +92,9 @@ pytest                                       # Run tests
 - Follow the established page structure with loading states and error handling
 - Use the apiClient for all API calls - it handles auth and error responses
 - TypeScript is configured in non-strict mode but aim for type safety
+- **Sparkline Integration**: Use MetricSparkline component for mini-charts
+- **Theme System**: Dark/light mode support with ThemeProvider
+- **Responsive Design**: Mobile-first approach with Tailwind CSS
 
 ### Database Schema
 - Supabase manages the database schema
@@ -118,3 +128,43 @@ pytest                                       # Run tests
 - API client automatically handles token refresh and auth errors
 - Supabase RLS policies must be considered when debugging data access issues
 - The `brain` directory contains auto-generated API types - do not edit directly
+
+## Recent Updates (Phase 2 - Dashboard Enhancement)
+
+### Completed Features
+1. **Enhanced Sidebar Navigation**:
+   - Improved active state with vertical bar + glow effect
+   - Static gradient background (from-violet-500/20 via-violet-600/15 to-transparent)
+   - Optimized transitions (250ms ease-out)
+
+2. **Dashboard Tab System**:
+   - **Analytics Tab**: Advanced charts with time-range filters, metric selection, CSV export
+   - **Reports Tab**: PDF generation with jsPDF, custom templates, report history
+   - **Notifications Tab**: Comprehensive alert center with categorization and settings
+
+3. **Sparkline Charts**:
+   - Real-time mini-charts for KPI metrics (sleep, HRV, steps, weight, mood, stress)
+   - Empty state handling with graceful fallbacks
+   - Smooth animations and micro-interactions
+
+### Key Dependencies Added
+- `jspdf` & `jspdf-autotable`: PDF report generation
+- `recharts`: Advanced charting library
+- Enhanced UI components for tabs, selects, and switches
+
+### Usage Examples
+```typescript
+// Sparkline integration
+<MetricSparkline
+  metricType="sleep"
+  data={sparklineData}
+  height={20}
+/>
+
+// PDF report generation
+const generatePDFReport = async () => {
+  const pdf = new jsPDF();
+  // ... report generation logic
+  pdf.save('health-report.pdf');
+};
+```

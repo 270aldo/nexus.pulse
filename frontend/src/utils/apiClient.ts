@@ -1,6 +1,7 @@
 // NGX Pulse API Client - Centralized HTTP client with authentication and interceptors
 import { supabase } from './supabaseClient';
 import { toast } from 'sonner';
+import { mockAIAPICall } from './demoAIService';
 
 // Import authManager for auto-logout functionality
 let authManager: any = null;
@@ -225,6 +226,19 @@ class ApiClient {
   }
 
   async post<T = any>(endpoint: string, data?: any): Promise<ApiResponse<T>> {
+    // Check if this is an AI endpoint and use mock service if backend isn't available
+    if (endpoint.startsWith('/api/ai/')) {
+      try {
+        return await mockAIAPICall(endpoint, data) as ApiResponse<T>;
+      } catch (error) {
+        console.error('Mock AI API error:', error);
+        return {
+          success: false,
+          error: 'Error en el servicio de IA. Inténtalo de nuevo.',
+        };
+      }
+    }
+
     const fullUrl = `${this.baseUrl}${endpoint}`;
     const traceId = this.generateTraceId();
     

@@ -1,23 +1,39 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom"; // Import useNavigate
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { fetchContentItems, fetchContentCategories, fetchContentTags } from "../utils/supabaseClient";
+import { Input } from "@/components/ui/input";
+import { fetchContentItems, fetchContentCategories, fetchContentTags, type UserProgram } from "../utils/supabaseClient";
 import { Skeleton } from "@/components/ui/skeleton";
+import ProgramWizard from "../components/ProgramWizard";
+import ActiveProgramCard from "../components/ActiveProgramCard";
+import { useAppContext } from "../components/AppProvider";
+import { 
+  Wand2, 
+  BookOpen, 
+  Target, 
+  Search, 
+  Filter,
+  Clock,
+  Tag,
+  Grid3X3,
+  List,
+  Dumbbell,
+  Apple
+} from 'lucide-react';
 
 // Define interfaces for the data structures
 interface ContentItem {
   id: string;
   title: string;
   summary: string | null;
-  category_id: string | null; // Changed from category_name
-  category_name?: string; // Will be added manually
+  category_id: string | null;
+  category_name?: string;
   tag_names: string[];
   content_type: string;
   thumbnail_url?: string | null;
-  estimated_read_time_minutes?: number | null; // For articles
-  duration_minutes?: number | null; // For videos
-  // Add other fields as necessary from fetchContentItems
+  estimated_read_time_minutes?: number | null;
+  duration_minutes?: number | null;
 }
 
 interface ContentCategory {
@@ -31,20 +47,24 @@ interface ContentTag {
 }
 
 const ResourceLibraryPage: React.FC = () => {
+  const { currentUserId } = useAppContext();
+  const navigate = useNavigate();
+  
+  // Content state
   const [contentItems, setContentItems] = useState<ContentItem[]>([]);
   const [categories, setCategories] = useState<ContentCategory[]>([]);
   const [tags, setTags] = useState<ContentTag[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [refreshTrigger, setRefreshTrigger] = useState<number>(0);
 
-  // Selected filters - to be used later
+  // Filter state
   const [selectedCategory, setSelectedCategory] = useState<string>("All Categories");
   const [selectedProgramTag, setSelectedProgramTag] = useState<string>("All Programs");
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [minDuration, setMinDuration] = useState<string>("");
   const [maxDuration, setMaxDuration] = useState<string>("");
-
-  const navigate = useNavigate(); // Initialize useNavigate
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
   useEffect(() => {
     const loadContent = async () => {
@@ -79,7 +99,16 @@ const ResourceLibraryPage: React.FC = () => {
     };
 
     loadContent();
-  }, []);
+  }, [refreshTrigger]);
+
+  const handleProgramCreated = (program: UserProgram) => {
+    console.log('Program created:', program);
+    setRefreshTrigger(prev => prev + 1);
+  };
+
+  const handleProgramUpdate = () => {
+    setRefreshTrigger(prev => prev + 1);
+  };
 
   const filteredContentItems = contentItems.filter(item => {
     const categoryMatch = selectedCategory === "All Categories" || item.category_name === selectedCategory;
@@ -101,210 +130,372 @@ const ResourceLibraryPage: React.FC = () => {
     return categoryMatch && programTagMatch && searchMatch && durationMatch;
   });
 
+  const clearFilters = () => {
+    setSelectedCategory("All Categories");
+    setSelectedProgramTag("All Programs");
+    setSearchTerm("");
+    setMinDuration("");
+    setMaxDuration("");
+  };
+
   return (
-    <div className="container mx-auto py-8 px-4 md:px-6 lg:px-8">
-      <header className="mb-8 text-center">
-        <h1 className="text-4xl font-bold tracking-tight text-white sm:text-5xl">
-          NGX Resource Library
-        </h1>
-        <p className="mt-4 text-lg leading-8 text-gray-300">
-          Curated knowledge to empower your health and performance journey.
-        </p>
-      </header>
-      <div className="lg:grid lg:grid-cols-4 lg:gap-8">
-        <aside className="hidden lg:block lg:col-span-1">
-          <div className="sticky top-20 space-y-2">
-            <h2 className="text-lg font-semibold text-white mb-2">Categories</h2>
-            <ul className="space-y-1">
-              <li>
-                <button
-                  onClick={() => setSelectedCategory('All Categories')}
-                  className={`w-full text-left px-3 py-2 rounded-md ${selectedCategory === 'All Categories' ? 'bg-indigo-700 text-white' : 'text-gray-300 hover:bg-gray-700'}`}
-                >
-                  All Categories
-                </button>
-              </li>
-              {categories.map(cat => (
-                <li key={cat.id}>
-                  <button
-                    onClick={() => setSelectedCategory(cat.name)}
-                    className={`w-full text-left px-3 py-2 rounded-md ${selectedCategory === cat.name ? 'bg-indigo-700 text-white' : 'text-gray-300 hover:bg-gray-700'}`}
-                  >
-                    {cat.name}
-                  </button>
-                </li>
-              ))}
-            </ul>
+    <div className="min-h-screen bg-neutral-900 text-neutral-100">
+      <div className="container mx-auto py-8 px-4 md:px-6 lg:px-8">
+        
+        {/* Page Header */}
+        <header className="mb-12">
+          <div className="text-center mb-10">
+            <h1 className="text-4xl font-bold tracking-tight text-white sm:text-5xl mb-4">
+              Centro de Programas Inteligentes
+            </h1>
+            <p className="text-lg leading-8 text-neutral-400 max-w-3xl mx-auto">
+              Explora contenido curado y crea programas personalizados con IA para optimizar tu salud y bienestar
+            </p>
           </div>
-        </aside>
-        <main className="lg:col-span-3">
+        </header>
 
-      {/* Filters Section */}
-      <div className="mb-8 p-6 bg-gray-800/70 backdrop-blur-sm border border-gray-700/60 rounded-xl shadow-xl">
-        <h2 className="text-xl font-semibold text-white mb-4">Filter Content</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 items-end">
-          <div>
-            <label htmlFor="category-filter" className="block text-sm font-medium text-gray-300 mb-1.5">
-              Category
-            </label>
-            <select
-              id="category-filter"
-              value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
-              className="block w-full rounded-md border-gray-600 bg-gray-700 text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2.5 h-10"
-            >
-              <option value="All Categories">All Categories</option>
-              {categories.map(cat => (
-                <option key={cat.id} value={cat.name}>{cat.name}</option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label htmlFor="program-filter" className="block text-sm font-medium text-gray-300 mb-1.5">
-              Program (Tag)
-            </label>
-            <select
-              id="program-filter"
-              value={selectedProgramTag}
-              onChange={(e) => setSelectedProgramTag(e.target.value)}
-              className="block w-full rounded-md border-gray-600 bg-gray-700 text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2.5 h-10"
-            >
-              <option value="All Programs">All Programs</option>
-              {/* Manually adding PRIME and LONGEVITY as they are key program tags */}
-              <option value="PRIME">NGX PRIME</option>
-              <option value="LONGEVITY">NGX LONGEVITY</option>
-              {/* You could also dynamically populate other tags if needed */}
-            </select>
-          </div>
-          <div>
-            <label htmlFor="search" className="block text-sm font-medium text-gray-300 mb-1.5">
-              Search
-            </label>
-            <input
-              id="search"
-              type="text"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Search titles or summaries"
-              className="block w-full rounded-md border-gray-600 bg-gray-700 text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2.5 h-10"
-            />
-          </div>
-          <div className="flex gap-2">
-            <div className="flex-1">
-              <label htmlFor="min-duration" className="block text-sm font-medium text-gray-300 mb-1.5">
-                Min Duration
-              </label>
-              <input
-                id="min-duration"
-                type="number"
-                value={minDuration}
-                onChange={(e) => setMinDuration(e.target.value)}
-                placeholder="min"
-                className="block w-full rounded-md border-gray-600 bg-gray-700 text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2.5 h-10"
-              />
+        {/* Content Library Section - MOVED UP */}
+        <section className="mb-16">
+          {/* Section Header */}
+          <div className="flex items-center justify-between mb-8">
+            <div>
+              <h2 className="text-3xl font-bold text-white mb-2 flex items-center">
+                <BookOpen className="w-8 h-8 mr-3 text-emerald-400" />
+                Biblioteca de Contenido
+              </h2>
+              <p className="text-neutral-400">
+                Explora contenido curado para complementar tu programa personalizado
+              </p>
             </div>
-            <div className="flex-1">
-              <label htmlFor="max-duration" className="block text-sm font-medium text-gray-300 mb-1.5">
-                Max Duration
-              </label>
-              <input
-                id="max-duration"
-                type="number"
-                value={maxDuration}
-                onChange={(e) => setMaxDuration(e.target.value)}
-                placeholder="max"
-                className="block w-full rounded-md border-gray-600 bg-gray-700 text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2.5 h-10"
-              />
+            
+            {/* View Mode Toggle */}
+            <div className="hidden md:flex items-center space-x-2 bg-neutral-800/60 rounded-lg p-1">
+              <Button
+                variant={viewMode === 'grid' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => setViewMode('grid')}
+                className="text-neutral-300"
+              >
+                <Grid3X3 className="w-4 h-4" />
+              </Button>
+              <Button
+                variant={viewMode === 'list' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => setViewMode('list')}
+                className="text-neutral-300"
+              >
+                <List className="w-4 h-4" />
+              </Button>
             </div>
           </div>
-          {/* <Button className="bg-indigo-600 hover:bg-indigo-700 text-white h-10">
-            Apply Filters // Filtering is now real-time on select change
-          </Button> */}
-        </div>
-      </div>
 
-      {isLoading && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[...Array(6)].map((_, index) => (
-            <Card key={index} className="bg-gray-800 border-gray-700 text-white flex flex-col">
-              <CardHeader>
-                <Skeleton className="h-6 w-3/4 bg-gray-700" />
-                <Skeleton className="h-4 w-1/2 bg-gray-700 mt-2" />
-              </CardHeader>
-              <CardContent className="flex-grow">
-                <Skeleton className="h-4 w-full bg-gray-700 mb-2" />
-                <Skeleton className="h-4 w-5/6 bg-gray-700 mb-3" />
-                <div className="flex flex-wrap gap-2 mb-4">
-                  <Skeleton className="h-5 w-16 bg-gray-700 rounded-full" />
-                  <Skeleton className="h-5 w-20 bg-gray-700 rounded-full" />
+          {/* Filters Section */}
+          <Card className="ngx-card mb-8">
+            <CardHeader className="pb-4">
+              <CardTitle className="text-lg font-semibold text-white flex items-center">
+                <Filter className="w-5 h-5 mr-2 text-neutral-400" />
+                Filtros de Contenido
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+                {/* Search */}
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-neutral-400 w-4 h-4" />
+                  <Input
+                    type="text"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    placeholder="Buscar contenido..."
+                    className="pl-10 bg-neutral-800 border-neutral-700 text-white placeholder:text-neutral-500"
+                  />
                 </div>
-              </CardContent>
-              <div className="p-6 pt-0">
-                <Skeleton className="h-10 w-full bg-indigo-700/50" />
-              </div>
-            </Card>
-          ))}
-        </div>
-      )}
 
-      {!isLoading && error && (
-        <div className="text-center py-10">
-          <p className="text-red-400 text-lg">{error}</p>
-        </div>
-      )}
-
-      {!isLoading && !error && filteredContentItems.length === 0 && (
-        <div className="text-center py-10">
-          <p className="text-gray-400 text-lg">No content items match your current filters. Try adjusting your selection.</p>
-        </div>
-      )}
-
-      {!isLoading && !error && filteredContentItems.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredContentItems.map((item) => (
-            <Card key={item.id} className="bg-gray-800 border-gray-700 text-white flex flex-col justify-between hover:border-indigo-500/70 transition-colors duration-200 shadow-lg hover:shadow-indigo-500/10">
-              <CardHeader>
-                <CardTitle className="text-xl font-semibold text-indigo-400 group-hover:text-indigo-300 transition-colors">
-                  {item.title}
-                </CardTitle>
-                <CardDescription className="text-gray-400 text-sm">{item.category_name} - {item.content_type}</CardDescription>
-              </CardHeader>
-              <CardContent className="flex-grow">
-                {item.thumbnail_url && (
-                  <img src={item.thumbnail_url} alt={item.title} className="rounded-md mb-3 w-full h-40 object-cover"/>
-                )}
-                <p className="text-gray-300 mb-3 text-sm leading-relaxed line-clamp-3">{item.summary || "No summary available."}</p>
-                {item.tag_names && item.tag_names.length > 0 && (
-                  <div className="flex flex-wrap gap-2 mb-4">
-                    {item.tag_names.map((tag) => (
-                      <span
-                        key={tag}
-                        className="px-2.5 py-1 text-xs font-semibold bg-gray-700 text-indigo-300 rounded-full"
-                      >
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-              <div className="p-6 pt-0">
-                {item.content_type.toLowerCase() === "video_external" && item.duration_minutes ? (
-                      <span className="text-xs text-gray-400 mb-2 inline-block">{item.duration_minutes} min video</span>
-                    ) : item.estimated_read_time_minutes ? (
-                      <span className="text-xs text-gray-400 mb-2 inline-block">{item.estimated_read_time_minutes} min read</span>
-                    ) : null}
-                <Button 
-                  className="w-full bg-indigo-600 hover:bg-indigo-700 text-white"
-                  onClick={() => navigate(`/content-item-page?id=${item.id}`)} // Navigate to ContentItemPage
+                {/* Category Filter */}
+                <select
+                  value={selectedCategory}
+                  onChange={(e) => setSelectedCategory(e.target.value)}
+                  className="bg-neutral-800 border border-neutral-700 text-white rounded-md px-3 py-2 focus:border-brand-violet focus:ring-1 focus:ring-brand-violet"
                 >
-                  View Content
+                  <option value="All Categories">Todas las Categorías</option>
+                  {categories.map(cat => (
+                    <option key={cat.id} value={cat.name}>{cat.name}</option>
+                  ))}
+                </select>
+
+                {/* Program Filter */}
+                <select
+                  value={selectedProgramTag}
+                  onChange={(e) => setSelectedProgramTag(e.target.value)}
+                  className="bg-neutral-800 border border-neutral-700 text-white rounded-md px-3 py-2 focus:border-brand-violet focus:ring-1 focus:ring-brand-violet"
+                >
+                  <option value="All Programs">Todos los Programas</option>
+                  <option value="PRIME">NGX PRIME</option>
+                  <option value="LONGEVITY">NGX LONGEVITY</option>
+                </select>
+
+                {/* Duration Filter */}
+                <div className="flex gap-2">
+                  <Input
+                    type="number"
+                    value={minDuration}
+                    onChange={(e) => setMinDuration(e.target.value)}
+                    placeholder="Min min"
+                    className="bg-neutral-800 border-neutral-700 text-white placeholder:text-neutral-500"
+                  />
+                  <Input
+                    type="number"
+                    value={maxDuration}
+                    onChange={(e) => setMaxDuration(e.target.value)}
+                    placeholder="Max min"
+                    className="bg-neutral-800 border-neutral-700 text-white placeholder:text-neutral-500"
+                  />
+                </div>
+              </div>
+
+              {/* Filter Actions */}
+              <div className="flex items-center justify-between mt-4">
+                <p className="text-sm text-neutral-400">
+                  {filteredContentItems.length} contenido{filteredContentItems.length !== 1 ? 's' : ''} encontrado{filteredContentItems.length !== 1 ? 's' : ''}
+                </p>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={clearFilters}
+                  className="border-neutral-600 text-neutral-300 hover:bg-neutral-700"
+                >
+                  Limpiar Filtros
                 </Button>
               </div>
+            </CardContent>
+          </Card>
+
+          {/* Content Grid */}
+          {isLoading && (
+            <div className={`grid gap-6 ${viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 xl:grid-cols-3' : 'grid-cols-1'}`}>
+              {[...Array(6)].map((_, index) => (
+                <Card key={index} className="ngx-card animate-pulse">
+                  <CardHeader>
+                    <Skeleton className="h-6 w-3/4 bg-neutral-700" />
+                    <Skeleton className="h-4 w-1/2 bg-neutral-700" />
+                  </CardHeader>
+                  <CardContent>
+                    <Skeleton className="h-32 w-full bg-neutral-700 mb-3" />
+                    <Skeleton className="h-4 w-full bg-neutral-700 mb-2" />
+                    <Skeleton className="h-4 w-2/3 bg-neutral-700" />
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+
+          {!isLoading && error && (
+            <div className="text-center py-16">
+              <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-6 max-w-md mx-auto">
+                <p className="text-red-400 text-lg font-medium">{error}</p>
+                <Button 
+                  onClick={() => setRefreshTrigger(prev => prev + 1)}
+                  className="mt-4 bg-red-600 hover:bg-red-700"
+                >
+                  Intentar de Nuevo
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {!isLoading && !error && filteredContentItems.length === 0 && (
+            <div className="text-center py-16">
+              <div className="bg-neutral-800/50 border border-neutral-700 rounded-lg p-8 max-w-md mx-auto">
+                <BookOpen className="w-16 h-16 text-neutral-500 mx-auto mb-4" />
+                <h3 className="text-lg font-semibold text-white mb-2">No se encontró contenido</h3>
+                <p className="text-neutral-400 mb-4">
+                  No hay contenido que coincida con tus filtros actuales.
+                </p>
+                <Button
+                  onClick={clearFilters}
+                  variant="outline"
+                  className="border-neutral-600 text-neutral-300 hover:bg-neutral-700"
+                >
+                  Limpiar Filtros
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {!isLoading && !error && filteredContentItems.length > 0 && (
+            <div className={`grid gap-6 ${viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 xl:grid-cols-3' : 'grid-cols-1'}`}>
+              {filteredContentItems.map((item) => (
+                <Card 
+                  key={item.id} 
+                  className="ngx-card hover:border-brand-violet/50 transition-all duration-200 group cursor-pointer"
+                  onClick={() => navigate(`/content-item-page?id=${item.id}`)}
+                >
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-lg font-semibold text-white group-hover:text-brand-violet transition-colors line-clamp-2">
+                      {item.title}
+                    </CardTitle>
+                    <div className="flex items-center gap-2 text-xs">
+                      <span className="text-neutral-400">{item.category_name}</span>
+                      <span className="text-neutral-600">•</span>
+                      <span className="text-neutral-400">{item.content_type}</span>
+                      {(item.duration_minutes || item.estimated_read_time_minutes) && (
+                        <>
+                          <span className="text-neutral-600">•</span>
+                          <span className="text-neutral-400 flex items-center">
+                            <Clock className="w-3 h-3 mr-1" />
+                            {item.duration_minutes || item.estimated_read_time_minutes} min
+                          </span>
+                        </>
+                      )}
+                    </div>
+                  </CardHeader>
+                  
+                  <CardContent className="space-y-4">
+                    {item.thumbnail_url && (
+                      <div className="aspect-video bg-neutral-800 rounded-lg overflow-hidden">
+                        <img 
+                          src={item.thumbnail_url} 
+                          alt={item.title} 
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+                        />
+                      </div>
+                    )}
+                    
+                    <p className="text-neutral-300 text-sm leading-relaxed line-clamp-3">
+                      {item.summary || "Contenido educativo para complementar tu programa de salud."}
+                    </p>
+                    
+                    {item.tag_names && item.tag_names.length > 0 && (
+                      <div className="flex flex-wrap gap-2">
+                        {item.tag_names.slice(0, 3).map((tag) => (
+                          <span
+                            key={tag}
+                            className="inline-flex items-center px-2 py-1 text-xs font-medium bg-neutral-800 text-neutral-300 rounded-full"
+                          >
+                            <Tag className="w-2 h-2 mr-1" />
+                            {tag}
+                          </span>
+                        ))}
+                        {item.tag_names.length > 3 && (
+                          <span className="text-xs text-neutral-500">
+                            +{item.tag_names.length - 3} más
+                          </span>
+                        )}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </section>
+
+        {/* Program Management Section - MOVED DOWN */}
+        <section className="mt-16 pt-16 border-t border-neutral-800">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-white mb-4 flex items-center justify-center">
+              <Target className="w-8 h-8 mr-3 text-brand-violet" />
+              Crea Tu Programa Personalizado
+            </h2>
+            <p className="text-lg text-neutral-400 max-w-2xl mx-auto">
+              Utiliza nuestra IA avanzada para crear programas completamente personalizados según tus objetivos específicos
+            </p>
+          </div>
+
+          {/* Active Program Display */}
+          {currentUserId && (
+            <div className="mb-12">
+              <ActiveProgramCard 
+                key={refreshTrigger} 
+                onProgramUpdate={handleProgramUpdate} 
+              />
+            </div>
+          )}
+
+          {/* Program Creation Options */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+            {/* Fitness Program Card */}
+            <Card className="bg-gradient-to-br from-brand-violet/10 to-brand-violet/5 border-brand-violet/30 hover:border-brand-violet/50 transition-all duration-200 group">
+              <CardContent className="p-8 text-center">
+                <div className="w-20 h-20 bg-brand-violet/20 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-200">
+                  <Dumbbell className="w-10 h-10 text-brand-violet" />
+                </div>
+                <h3 className="text-xl font-semibold text-white mb-3">
+                  Programa de Fitness
+                </h3>
+                <p className="text-sm text-neutral-400 mb-6">
+                  Entrenamientos personalizados, planes de fuerza, cardio y acondicionamiento físico adaptados a tu nivel
+                </p>
+                
+                {currentUserId ? (
+                  <ProgramWizard 
+                    programType="fitness"
+                    onProgramCreated={handleProgramCreated}
+                    triggerButton={
+                      <Button className="bg-brand-violet hover:bg-brand-violet/80 text-white w-full">
+                        <Wand2 size={16} className="mr-2" />
+                        Crear Programa Fitness
+                      </Button>
+                    }
+                  />
+                ) : (
+                  <Button 
+                    onClick={() => navigate('/login')}
+                    variant="outline" 
+                    className="border-brand-violet text-brand-violet hover:bg-brand-violet/10 w-full"
+                  >
+                    Iniciar Sesión
+                  </Button>
+                )}
+              </CardContent>
             </Card>
-          ))}
-        </div>
-      )}
-        </main>
+
+            {/* Nutrition Program Card */}
+            <Card className="bg-gradient-to-br from-emerald-500/10 to-emerald-500/5 border-emerald-500/30 hover:border-emerald-500/50 transition-all duration-200 group">
+              <CardContent className="p-8 text-center">
+                <div className="w-20 h-20 bg-emerald-500/20 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-200">
+                  <Apple className="w-10 h-10 text-emerald-400" />
+                </div>
+                <h3 className="text-xl font-semibold text-white mb-3">
+                  Programa de Nutrición
+                </h3>
+                <p className="text-sm text-neutral-400 mb-6">
+                  Planes alimentarios inteligentes, recetas personalizadas y estrategias nutricionales para tus objetivos
+                </p>
+                
+                {currentUserId ? (
+                  <ProgramWizard 
+                    programType="nutrition"
+                    onProgramCreated={handleProgramCreated}
+                    triggerButton={
+                      <Button className="bg-emerald-500 hover:bg-emerald-600 text-white w-full">
+                        <Wand2 size={16} className="mr-2" />
+                        Crear Programa Nutrición
+                      </Button>
+                    }
+                  />
+                ) : (
+                  <Button 
+                    onClick={() => navigate('/login')}
+                    variant="outline" 
+                    className="border-emerald-500 text-emerald-400 hover:bg-emerald-500/10 w-full"
+                  >
+                    Iniciar Sesión
+                  </Button>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Help Text for Non-logged Users */}
+          {!currentUserId && (
+            <div className="text-center mt-8">
+              <p className="text-neutral-500 text-sm">
+                Inicia sesión para acceder a programas personalizados con IA y hacer seguimiento de tu progreso
+              </p>
+            </div>
+          )}
+        </section>
       </div>
     </div>
   );
