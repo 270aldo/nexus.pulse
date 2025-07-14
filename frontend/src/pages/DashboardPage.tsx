@@ -255,7 +255,8 @@ const [sleep7DayTrend, setSleep7DayTrend] = useState<SleepTrendData[]>([]);
     }
   };
   return (
-    <div className="min-h-screen bg-neutral-900 text-neutral-100 p-4 sm:p-6 lg:p-8">{/* Removed flex flex-col and top navigation */}
+    <div className="min-h-screen bg-neutral-900 text-neutral-100 p-4 sm:p-6 lg:p-8">
+      {/* Removed flex flex-col and top navigation */}
 
       {/* Dashboard Header Section - Compact */}
       <header className="mb-8">
