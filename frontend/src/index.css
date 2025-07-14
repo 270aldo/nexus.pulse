@@ -1,6 +1,9 @@
 /* Import mobile optimizations */
 @import './styles/mobile-optimizations.css';
 
+/* Import NGX Pulse Design System */
+@import './styles/design-system.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

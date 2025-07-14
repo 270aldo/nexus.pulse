@@ -159,7 +159,7 @@ const SignUpPage: React.FC = () => {
           </Button>
           <Button 
             variant="outline" 
-            className="w-full border-brand-violet/80 text-brand-violet hover:bg-brand-violet/10 hover:text-brand-violet font-semibold transition-all duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-brand-violet/50 focus:ring-offset-2 focus:ring-offset-neutral-900" 
+            className="w-full border-neutral-700 bg-black text-white hover:bg-neutral-900 hover:text-white hover:border-neutral-600 font-semibold transition-all duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-neutral-700 focus:ring-offset-2 focus:ring-offset-neutral-900" 
             onClick={() => navigate("/auth-page")}
             disabled={isSubmitting}
           >

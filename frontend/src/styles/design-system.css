@@ -1,0 +1,315 @@
+/* NGX Pulse Design System - Unified Visual Language */
+
+/* 🎨 PALETA DE COLORES OFICIAL */
+:root {
+  /* Colores Primarios - Brand Identity */
+  --ngx-primary: #8b5cf6;         /* brand-violet - Violeta principal */
+  --ngx-primary-dark: #7c3aed;    /* Violeta oscuro para hover */
+  --ngx-primary-light: #a78bfa;   /* Violeta claro para estados */
+  
+  /* Colores Secundarios - Health & Wellness */
+  --ngx-success: #10b981;         /* Verde para logros/salud */
+  --ngx-warning: #f59e0b;         /* Amarillo para alertas */
+  --ngx-danger: #ef4444;          /* Rojo para problemas */
+  --ngx-info: #3b82f6;            /* Azul para información */
+  
+  /* Colores Neutros - Base del Sistema */
+  --ngx-neutral-50: #fafafa;      /* Blanco casi puro */
+  --ngx-neutral-100: #f5f5f5;     /* Gris muy claro */
+  --ngx-neutral-200: #e5e5e5;     /* Gris claro */
+  --ngx-neutral-300: #d4d4d4;     /* Gris medio-claro */
+  --ngx-neutral-400: #a3a3a3;     /* Gris medio */
+  --ngx-neutral-500: #737373;     /* Gris */
+  --ngx-neutral-600: #525252;     /* Gris medio-oscuro */
+  --ngx-neutral-700: #404040;     /* Gris oscuro */
+  --ngx-neutral-800: #262626;     /* Gris muy oscuro */
+  --ngx-neutral-900: #171717;     /* Negro casi */
+  --ngx-neutral-950: #0a0a0a;     /* Negro puro */
+  
+  /* Colores Específicos de Salud */
+  --ngx-health-heart: #dc2626;    /* Rojo corazón */
+  --ngx-health-sleep: #6366f1;    /* Azul sueño */
+  --ngx-health-energy: #f59e0b;   /* Amarillo energía */
+  --ngx-health-recovery: #10b981; /* Verde recuperación */
+  --ngx-health-stress: #ef4444;   /* Rojo estrés */
+}
+
+/* 📐 SISTEMA DE ESPACIADO */
+:root {
+  --ngx-space-xs: 0.25rem;   /* 4px */
+  --ngx-space-sm: 0.5rem;    /* 8px */
+  --ngx-space-md: 1rem;      /* 16px */
+  --ngx-space-lg: 1.5rem;    /* 24px */
+  --ngx-space-xl: 2rem;      /* 32px */
+  --ngx-space-2xl: 3rem;     /* 48px */
+  --ngx-space-3xl: 4rem;     /* 64px */
+  
+  /* Sidebar widths */
+  --ngx-sidebar-expanded: 16rem;   /* 256px */
+  --ngx-sidebar-collapsed: 4.5rem; /* 72px */
+}
+
+/* 🎭 COMPONENTES BASE - TARJETAS */
+.ngx-card {
+  background: var(--ngx-neutral-900);
+  border: 1px solid var(--ngx-neutral-700);
+  border-radius: 0.75rem;
+  padding: var(--ngx-space-lg);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease-in-out;
+}
+
+.ngx-card:hover {
+  border-color: var(--ngx-neutral-600);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+.ngx-card--primary {
+  border-color: var(--ngx-primary);
+  background: linear-gradient(135deg, var(--ngx-neutral-900) 0%, rgba(139, 92, 246, 0.05) 100%);
+}
+
+.ngx-card--health {
+  border-color: var(--ngx-success);
+  background: linear-gradient(135deg, var(--ngx-neutral-900) 0%, rgba(16, 185, 129, 0.05) 100%);
+}
+
+/* 🔘 BOTONES CONSISTENTES */
+.ngx-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  transition: all 0.2s ease-in-out;
+  cursor: pointer;
+  border: none;
+  min-height: 44px; /* Touch target */
+}
+
+.ngx-btn--primary {
+  background: var(--ngx-primary);
+  color: white;
+  box-shadow: 0 4px 14px 0 rgba(139, 92, 246, 0.4);
+}
+
+.ngx-btn--primary:hover {
+  background: var(--ngx-primary-dark);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px 0 rgba(139, 92, 246, 0.5);
+}
+
+.ngx-btn--secondary {
+  background: var(--ngx-neutral-800);
+  color: var(--ngx-neutral-200);
+  border: 1px solid var(--ngx-neutral-700);
+}
+
+.ngx-btn--secondary:hover {
+  background: var(--ngx-neutral-700);
+  border-color: var(--ngx-neutral-600);
+}
+
+/* 📊 MÉTRICAS DE SALUD */
+.ngx-metric {
+  background: var(--ngx-neutral-900);
+  border: 1px solid var(--ngx-neutral-700);
+  border-radius: 0.75rem;
+  padding: var(--ngx-space-lg);
+  text-align: center;
+  transition: all 0.2s ease-in-out;
+}
+
+.ngx-metric:hover {
+  border-color: var(--ngx-primary);
+  transform: translateY(-2px);
+}
+
+.ngx-metric__value {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--ngx-primary);
+  line-height: 1;
+  margin-bottom: var(--ngx-space-sm);
+}
+
+.ngx-metric__label {
+  font-size: 0.875rem;
+  color: var(--ngx-neutral-400);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.ngx-metric__trend {
+  font-size: 0.75rem;
+  margin-top: var(--ngx-space-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--ngx-space-xs);
+}
+
+.ngx-metric__trend--positive {
+  color: var(--ngx-success);
+}
+
+.ngx-metric__trend--negative {
+  color: var(--ngx-danger);
+}
+
+.ngx-metric__trend--neutral {
+  color: var(--ngx-neutral-400);
+}
+
+/* 🎨 ESTADOS VACÍOS MEJORADOS */
+.ngx-empty-state {
+  text-align: center;
+  padding: var(--ngx-space-3xl) var(--ngx-space-lg);
+  color: var(--ngx-neutral-400);
+}
+
+.ngx-empty-state__icon {
+  width: 4rem;
+  height: 4rem;
+  margin: 0 auto var(--ngx-space-lg);
+  opacity: 0.5;
+}
+
+.ngx-empty-state__title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--ngx-neutral-300);
+  margin-bottom: var(--ngx-space-sm);
+}
+
+.ngx-empty-state__description {
+  font-size: 0.875rem;
+  line-height: 1.5;
+  margin-bottom: var(--ngx-space-lg);
+}
+
+/* 🏷️ BADGES Y ETIQUETAS */
+.ngx-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.ngx-badge--success {
+  background: rgba(16, 185, 129, 0.1);
+  color: var(--ngx-success);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.ngx-badge--warning {
+  background: rgba(245, 158, 11, 0.1);
+  color: var(--ngx-warning);
+  border: 1px solid rgba(245, 158, 11, 0.2);
+}
+
+.ngx-badge--danger {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--ngx-danger);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.ngx-badge--primary {
+  background: rgba(139, 92, 246, 0.1);
+  color: var(--ngx-primary);
+  border: 1px solid rgba(139, 92, 246, 0.2);
+}
+
+/* 📱 RESPONSIVO */
+@media (max-width: 768px) {
+  .ngx-card {
+    padding: var(--ngx-space-md);
+  }
+  
+  .ngx-metric__value {
+    font-size: 1.5rem;
+  }
+  
+  .ngx-btn {
+    padding: 0.875rem 1.25rem;
+    min-height: 48px; /* Más grande en móvil */
+  }
+}
+
+/* 🎯 UTILIDADES ESPECÍFICAS NGX */
+.ngx-gradient-primary {
+  background: linear-gradient(135deg, var(--ngx-primary) 0%, var(--ngx-primary-dark) 100%);
+}
+
+.ngx-gradient-health {
+  background: linear-gradient(135deg, var(--ngx-success) 0%, var(--ngx-info) 100%);
+}
+
+.ngx-text-primary { color: var(--ngx-primary); }
+.ngx-text-success { color: var(--ngx-success); }
+.ngx-text-warning { color: var(--ngx-warning); }
+.ngx-text-danger { color: var(--ngx-danger); }
+.ngx-text-muted { color: var(--ngx-neutral-400); }
+
+.ngx-bg-primary { background-color: var(--ngx-primary); }
+.ngx-bg-card { background-color: var(--ngx-neutral-900); }
+.ngx-bg-surface { background-color: var(--ngx-neutral-800); }
+
+/* 🔍 FOCUS STATES */
+.ngx-focus:focus {
+  outline: 2px solid var(--ngx-primary);
+  outline-offset: 2px;
+}
+
+/* ⚡ ANIMACIONES */
+.ngx-pulse {
+  animation: ngx-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes ngx-pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+.ngx-float {
+  animation: ngx-float 6s ease-in-out infinite;
+}
+
+@keyframes ngx-float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+/* 🔧 UTILIDADES SIDEBAR */
+.md\:w-18 {
+  width: var(--ngx-sidebar-collapsed);
+}
+
+.md\:ml-18 {
+  margin-left: var(--ngx-sidebar-collapsed);
+}
+
+@media (min-width: 768px) {
+  .md\:w-18 {
+    width: var(--ngx-sidebar-collapsed);
+  }
+  
+  .md\:ml-18 {
+    margin-left: var(--ngx-sidebar-collapsed);
+  }
+}

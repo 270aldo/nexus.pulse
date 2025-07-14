@@ -114,7 +114,8 @@ const AuthPage: React.FC = () => {
             {isSubmitting ? "Iniciando sesión..." : "Iniciar Sesión"}
           </Button>
           <Button 
-            className="w-full min-h-[44px] bg-brand-violet hover:bg-brand-violet/90 active:scale-98 text-white font-semibold transition-all duration-300 ease-in-out shadow-lg shadow-brand-violet/40 focus:outline-none focus:ring-2 focus:ring-brand-violet/50 focus:ring-offset-2 focus:ring-offset-neutral-900 touch-target" 
+            variant="outline"
+            className="w-full min-h-[44px] border-neutral-700 bg-black text-white hover:bg-neutral-900 hover:text-white hover:border-neutral-600 font-semibold transition-all duration-300 ease-in-out transform active:scale-98 focus:outline-none focus:ring-2 focus:ring-neutral-700 focus:ring-offset-2 focus:ring-offset-neutral-900 touch-target" 
             // Envuelve la navegación en startTransition para prevenir la advertencia
             onClick={() => startTransition(() => navigate("/sign-up-page"))}
             disabled={isSubmitting}

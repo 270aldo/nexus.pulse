@@ -78,10 +78,10 @@ export default function App() {
           <div>
             <Button 
               variant="outline"
-              className="text-slate-200 border-neutral-700 hover:bg-neutral-800 hover:text-brand-violet hover:border-brand-violet transition-colors"
+              className="text-white border-neutral-700 bg-black hover:bg-neutral-900 hover:text-white hover:border-neutral-600 transition-all"
               onClick={() => handleNavigation("/auth-page")}
             >
-              Login
+              Acceso
             </Button>
           </div>
         </div>
@@ -111,19 +111,19 @@ export default function App() {
             <div className="mt-10 flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
               <Button
                 size="lg"
-                className="w-full sm:w-auto group relative inline-flex items-center justify-center h-14 px-8 text-base font-semibold text-white bg-brand-violet hover:bg-brand-violet/90 shadow-lg shadow-brand-violet/40 hover:shadow-brand-violet/60 focus:ring-offset-neutral-950 rounded-lg transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-brand-violet/50 focus:ring-offset-2 shadow-[0_0_10px_2px_rgba(109,0,255,0.3)] hover:shadow-[0_0_25px_8px_rgba(109,0,255,0.5)]"
+                className="w-full sm:w-auto group relative inline-flex items-center justify-center h-14 px-8 text-base font-bold text-white bg-brand-violet hover:bg-brand-violet/90 shadow-xl shadow-brand-violet/50 hover:shadow-brand-violet/70 focus:ring-offset-neutral-950 rounded-md transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-brand-violet/50 focus:ring-offset-2 shadow-[0_0_15px_4px_rgba(109,0,255,0.4)] hover:shadow-[0_0_30px_10px_rgba(109,0,255,0.6)]"
                 onClick={() => handleNavigation("/auth-page")}
               >
-                Acceder a mi Programa
+                Accede a tu programa
                 <ArrowRight className="w-5 h-5 ml-2 transition-transform duration-300 ease-in-out group-hover:translate-x-1" />
               </Button>
               <Button
                 size="lg"
                 variant="outline"
-                className="w-full sm:w-auto group relative inline-flex items-center justify-center h-14 px-8 text-base font-semibold text-neutral-200 border-2 border-brand-violet/70 hover:bg-brand-violet/10 hover:text-brand-violet hover:border-brand-violet shadow-md focus:ring-offset-neutral-950 rounded-lg transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-brand-violet/50 focus:ring-offset-2 shadow-[0_0_8px_1px_rgba(109,0,255,0.2)] hover:shadow-[0_0_20px_5px_rgba(109,0,255,0.4)]"
+                className="w-full sm:w-auto group relative inline-flex items-center justify-center h-14 px-8 text-base font-bold text-white border-2 border-neutral-700 bg-black hover:bg-neutral-900 hover:text-white hover:border-neutral-600 rounded-md transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-neutral-700 focus:ring-offset-2 focus:ring-offset-neutral-950"
               >
-                Explorar Características
-                {/* <ChevronRight className="w-5 h-5 ml-2 transition-transform duration-300 ease-in-out group-hover:translate-x-1" /> */}
+                Características del Explorador
+                <ChevronRight className="w-5 h-5 ml-2 transition-transform duration-300 ease-in-out group-hover:translate-x-1" />
               </Button>
             </div>
              <div className="mt-10 flex items-center gap-x-6 opacity-80">
