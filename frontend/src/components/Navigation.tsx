@@ -10,7 +10,9 @@ import {
   Settings,
   BarChart3,
   Calendar,
-  BookOpen
+  BookOpen,
+  Menu,
+  X
 } from 'lucide-react';
 
 interface NavigationItem {
@@ -27,63 +29,63 @@ const navigationItems: NavigationItem[] = [
     label: 'Dashboard',
     icon: <Home className="w-5 h-5" />,
     path: '/dashboard-page',
-    color: 'text-ngx-primary'
+    color: 'text-violet-400'
   },
   {
     id: 'training',
     label: 'Entrenamientos',
     icon: <Activity className="w-5 h-5" />,
     path: '/training-log-page',
-    color: 'text-ngx-health-energy'
+    color: 'text-orange-400'
   },
   {
     id: 'nutrition',
     label: 'Nutrición',
     icon: <Apple className="w-5 h-5" />,
     path: '/nutrition-log-page',
-    color: 'text-ngx-success'
+    color: 'text-green-400'
   },
   {
     id: 'wellness',
     label: 'Bienestar',
     icon: <Heart className="w-5 h-5" />,
     path: '/wellness-log-page',
-    color: 'text-ngx-health-recovery'
+    color: 'text-pink-400'
   },
   {
     id: 'biometrics',
     label: 'Biometría',
     icon: <BarChart3 className="w-5 h-5" />,
     path: '/biometric-log-page',
-    color: 'text-ngx-info'
+    color: 'text-blue-400'
   },
   {
     id: 'checkin',
     label: 'Check-in',
     icon: <Calendar className="w-5 h-5" />,
     path: '/daily-checkin-page',
-    color: 'text-ngx-health-sleep'
+    color: 'text-indigo-400'
   },
   {
     id: 'chat',
     label: 'AI Coach',
     icon: <MessageCircle className="w-5 h-5" />,
     path: '/chat-page',
-    color: 'text-ngx-primary-light'
+    color: 'text-purple-400'
   },
   {
     id: 'resources',
     label: 'Recursos',
     icon: <BookOpen className="w-5 h-5" />,
     path: '/resource-library-page',
-    color: 'text-ngx-neutral-400'
+    color: 'text-neutral-400'
   },
   {
     id: 'settings',
     label: 'Configuración',
     icon: <Settings className="w-5 h-5" />,
     path: '/settings-page',
-    color: 'text-ngx-neutral-400'
+    color: 'text-neutral-400'
   }
 ];
 
@@ -109,11 +111,11 @@ export const BottomNavigation: React.FC = () => {
               onClick={() => handleNavigation(item.path)}
               className={`flex flex-col items-center justify-center p-2 rounded-lg transition-all duration-200 ${
                 isActive 
-                  ? 'bg-ngx-primary/10 text-ngx-primary' 
-                  : 'text-ngx-neutral-400 hover:text-ngx-neutral-300'
+                  ? 'bg-violet-600/20 text-violet-400' 
+                  : 'text-neutral-400 hover:text-neutral-300'
               }`}
             >
-              <div className={`mb-1 ${isActive ? 'text-ngx-primary' : item.color}`}>
+              <div className={`mb-1 ${isActive ? 'text-violet-400' : item.color}`}>
                 {item.icon}
               </div>
               <span className="text-xs font-medium">{item.label}</span>
@@ -139,7 +141,7 @@ const Tooltip: React.FC<{ children: React.ReactNode; content: string; isVisible:
     >
       {children}
       {showTooltip && (
-        <div className="absolute left-full ml-2 px-2 py-1 bg-ngx-neutral-800 text-ngx-neutral-200 text-sm rounded-md whitespace-nowrap z-50 border border-ngx-neutral-700">
+        <div className="absolute left-full ml-2 px-2 py-1 bg-neutral-800 text-white text-sm rounded-md whitespace-nowrap z-50 border border-neutral-700 shadow-lg">
           {content}
         </div>
       )}
@@ -150,7 +152,7 @@ const Tooltip: React.FC<{ children: React.ReactNode; content: string; isVisible:
 export const SideNavigation: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { isCollapsed } = useSidebar();
+  const { isCollapsed, toggleSidebar } = useSidebar();
 
   const handleNavigation = (path: string) => {
     navigate(path);
@@ -171,17 +173,32 @@ export const SideNavigation: React.FC = () => {
       
       <div className="relative flex flex-col w-full overflow-hidden">
         {/* Logo */}
-        <div className={`p-6 border-b border-ngx-neutral-700/50 ${isCollapsed ? 'px-4' : 'px-6'}`}>
+        <div className={`p-6 border-b border-neutral-700/50 ${isCollapsed ? 'px-4' : 'px-6'} relative`}>
+          {/* Toggle button */}
+          <button
+            onClick={() => {
+              console.log('Toggle clicked, current state:', isCollapsed);
+              toggleSidebar();
+            }}
+            className="absolute top-4 right-4 w-8 h-8 bg-neutral-800/80 hover:bg-violet-600/20 border border-neutral-700/50 rounded-lg flex items-center justify-center transition-all duration-300 hover:border-violet-500/50 z-10"
+            aria-label={isCollapsed ? 'Expandir sidebar' : 'Colapsar sidebar'}
+          >
+            {isCollapsed ? (
+              <Menu className="w-4 h-4 text-white" />
+            ) : (
+              <X className="w-4 h-4 text-white" />
+            )}
+          </button>
           {isCollapsed ? (
             <div className="flex justify-center">
-              <div className="w-8 h-8 bg-ngx-primary rounded-lg flex items-center justify-center">
+              <div className="w-8 h-8 bg-violet-600 rounded-lg flex items-center justify-center">
                 <span className="text-white font-bold text-sm">N</span>
               </div>
             </div>
           ) : (
             <div className="transition-all duration-300">
-              <h1 className="text-2xl font-bold text-ngx-primary">NGX Pulse</h1>
-              <p className="text-sm text-ngx-neutral-400 mt-1">Health Platform</p>
+              <h1 className="text-2xl font-bold text-violet-400">NGX Pulse</h1>
+              <p className="text-sm text-neutral-400 mt-1">Health Platform</p>
             </div>
           )}
         </div>
@@ -198,17 +215,17 @@ export const SideNavigation: React.FC = () => {
                     onClick={() => handleNavigation(item.path)}
                     className={`w-full flex items-center justify-center py-3 mx-2 mb-2 rounded-lg transition-all duration-300 group relative ${
                       isActive 
-                        ? 'bg-ngx-primary/15 text-ngx-primary shadow-lg shadow-ngx-primary/25' 
-                        : 'text-ngx-neutral-400 hover:text-ngx-neutral-300 hover:bg-ngx-neutral-800/50 hover:scale-105'
+                        ? 'bg-violet-600/20 text-violet-400 shadow-lg shadow-violet-500/25' 
+                        : 'text-neutral-400 hover:text-neutral-300 hover:bg-neutral-800/50 hover:scale-105'
                     }`}
                   >
                     {/* Active indicator */}
                     {isActive && (
-                      <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-ngx-primary rounded-r-full" />
+                      <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-violet-500 rounded-r-full" />
                     )}
                     
                     <div className={`transition-all duration-300 ${
-                      isActive ? 'text-ngx-primary scale-110' : `${item.color} group-hover:scale-110`
+                      isActive ? 'text-violet-400 scale-110' : `${item.color} group-hover:scale-110`
                     }`}>
                       {item.icon}
                     </div>
@@ -223,26 +240,26 @@ export const SideNavigation: React.FC = () => {
                 onClick={() => handleNavigation(item.path)}
                 className={`w-full flex items-center px-6 py-3 text-left transition-all duration-300 group relative ${
                   isActive 
-                    ? 'bg-ngx-primary/15 text-ngx-primary border-r-2 border-ngx-primary shadow-lg shadow-ngx-primary/10' 
-                    : 'text-ngx-neutral-400 hover:text-ngx-neutral-300 hover:bg-ngx-neutral-800/50 hover:translate-x-1'
+                    ? 'bg-violet-600/20 text-violet-400 border-r-2 border-violet-500 shadow-lg shadow-violet-500/10' 
+                    : 'text-neutral-400 hover:text-neutral-300 hover:bg-neutral-800/50 hover:translate-x-1'
                 }`}
               >
                 {/* Active indicator glow */}
                 {isActive && (
-                  <div className="absolute inset-0 bg-gradient-to-r from-ngx-primary/5 to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-r from-violet-500/10 to-transparent" />
                 )}
                 
                 <div className={`mr-3 transition-all duration-300 ${
-                  isActive ? 'text-ngx-primary scale-110' : `${item.color} group-hover:scale-105`
+                  isActive ? 'text-violet-400 scale-110' : `${item.color} group-hover:scale-105`
                 }`}>
                   {item.icon}
                 </div>
-                <span className="font-medium transition-all duration-300 group-hover:text-ngx-primary/80">
+                <span className="font-medium transition-all duration-300 group-hover:text-violet-400/80 text-white">
                   {item.label}
                 </span>
                 
                 {/* Hover glow effect */}
-                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-gradient-to-r from-ngx-primary/5 to-transparent" />
+                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-gradient-to-r from-violet-500/10 to-transparent" />
               </button>
             );
           })}
@@ -253,19 +270,19 @@ export const SideNavigation: React.FC = () => {
           {isCollapsed ? (
             <Tooltip content="Usuario Premium" isVisible={true}>
               <div className="flex justify-center">
-                <div className="w-10 h-10 bg-ngx-primary rounded-full flex items-center justify-center ring-2 ring-ngx-primary/20">
+                <div className="w-10 h-10 bg-violet-600 rounded-full flex items-center justify-center ring-2 ring-violet-500/20">
                   <span className="text-white font-semibold">U</span>
                 </div>
               </div>
             </Tooltip>
           ) : (
             <div className="flex items-center transition-all duration-300">
-              <div className="w-10 h-10 bg-ngx-primary rounded-full flex items-center justify-center ring-2 ring-ngx-primary/20">
+              <div className="w-10 h-10 bg-violet-600 rounded-full flex items-center justify-center ring-2 ring-violet-500/20">
                 <span className="text-white font-semibold">U</span>
               </div>
               <div className="ml-3">
-                <p className="text-sm font-medium text-ngx-neutral-300">Usuario</p>
-                <p className="text-xs text-ngx-neutral-500">Premium</p>
+                <p className="text-sm font-medium text-neutral-300">Usuario</p>
+                <p className="text-xs text-neutral-500">Premium</p>
               </div>
             </div>
           )}

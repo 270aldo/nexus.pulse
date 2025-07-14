@@ -18,10 +18,7 @@ const AppContent = () => {
   const hideNavigation = ['/', '/auth-page', '/authpage', '/sign-up-page', '/signuppage'].includes(location.pathname);
   
   return (
-    <div className="min-h-screen bg-ngx-neutral-900">
-      {/* Hamburger button - only show on pages with navigation */}
-      {!hideNavigation && <HamburgerButton />}
-      
+    <div className="min-h-screen bg-neutral-900">
       {/* Main content area with dynamic navigation spacing */}
       <div className={
         hideNavigation 

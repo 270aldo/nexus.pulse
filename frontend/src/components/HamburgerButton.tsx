@@ -7,13 +7,13 @@ export const HamburgerButton: React.FC = () => {
   return (
     <button
       onClick={toggleSidebar}
-      className="fixed top-4 left-4 z-50 w-10 h-10 bg-ngx-neutral-800/90 backdrop-blur-sm border border-ngx-neutral-700/50 rounded-lg flex items-center justify-center transition-all duration-300 hover:bg-ngx-primary/20 hover:border-ngx-primary/50 hover:shadow-lg hover:shadow-ngx-primary/25 focus:outline-none focus:ring-2 focus:ring-ngx-primary/50"
+      className="fixed top-4 left-4 z-50 w-10 h-10 bg-neutral-800/90 backdrop-blur-sm border border-neutral-700/50 rounded-lg flex items-center justify-center transition-all duration-300 hover:bg-violet-600/20 hover:border-violet-500/50 hover:shadow-lg hover:shadow-violet-500/25 focus:outline-none focus:ring-2 focus:ring-violet-500/50 md:hidden"
       aria-label={isCollapsed ? 'Expandir sidebar' : 'Colapsar sidebar'}
     >
       <div className="relative w-5 h-5">
         {/* Top line */}
         <span
-          className={`absolute block h-0.5 w-5 bg-ngx-neutral-300 transform transition-all duration-300 ease-in-out ${
+          className={`absolute block h-0.5 w-5 bg-white transform transition-all duration-300 ease-in-out ${
             isCollapsed 
               ? 'rotate-45 translate-y-2' 
               : 'translate-y-0'
@@ -21,7 +21,7 @@ export const HamburgerButton: React.FC = () => {
         />
         {/* Middle line */}
         <span
-          className={`absolute block h-0.5 w-5 bg-ngx-neutral-300 transform transition-all duration-300 ease-in-out translate-y-2 ${
+          className={`absolute block h-0.5 w-5 bg-white transform transition-all duration-300 ease-in-out translate-y-2 ${
             isCollapsed 
               ? 'opacity-0 scale-0' 
               : 'opacity-100 scale-100'
@@ -29,7 +29,7 @@ export const HamburgerButton: React.FC = () => {
         />
         {/* Bottom line */}
         <span
-          className={`absolute block h-0.5 w-5 bg-ngx-neutral-300 transform transition-all duration-300 ease-in-out ${
+          className={`absolute block h-0.5 w-5 bg-white transform transition-all duration-300 ease-in-out ${
             isCollapsed 
               ? '-rotate-45 translate-y-2' 
               : 'translate-y-4'
