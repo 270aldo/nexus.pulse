@@ -255,11 +255,11 @@ const [sleep7DayTrend, setSleep7DayTrend] = useState<SleepTrendData[]>([]);
     }
   };
   return (
-    <div className="min-h-screen bg-neutral-900 text-neutral-100 p-4 sm:p-6 lg:p-8">
+    <div className="min-h-screen bg-neutral-900 text-neutral-100 p-2 sm:p-4">
       {/* Removed flex flex-col and top navigation */}
 
       {/* Dashboard Header Section - Compact */}
-      <header className="mb-8">
+      <header className="mb-4">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
           <div>
             <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight mb-1">
@@ -321,18 +321,18 @@ const [sleep7DayTrend, setSleep7DayTrend] = useState<SleepTrendData[]>([]);
                 />
               </div>
 
-              {/* Main Content Area (Chart + Sidebar) - Improved Balance */}
-              <div className="grid grid-cols-1 xl:grid-cols-5 lg:grid-cols-4 gap-6">
-                {/* Main Content: Sleep Trend Chart - More Space */}
-                <div className="xl:col-span-3 lg:col-span-2">
+              {/* Main Content Area - MÁXIMO APROVECHAMIENTO */}
+              <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
+                {/* Main Content: Sleep Trend Chart - MÁXIMO ESPACIO */}
+                <div className="lg:col-span-3 h-full min-h-[700px]">
                   <SleepTrendSection sleep7DayTrend={sleep7DayTrend} isLoadingMetrics={isLoadingMetrics} />
                 </div>
                 
-                {/* Sidebar Content - Better Proportions */}
-                <div className="xl:col-span-2 lg:col-span-2 space-y-4">
+                {/* Sidebar Content - ALTURA COMPLETA */}
+                <div className="lg:col-span-1 h-full min-h-[700px] flex flex-col gap-4">
                   <HrvTrendSection hrv7DayTrend={hrv7DayTrend} isLoadingMetrics={isLoadingMetrics} />
 
-                  <div className="ngx-card">
+                  <div className="ngx-card flex-1">
                     <h3 className="text-base font-semibold text-white mb-4 pb-2 border-b border-neutral-700/50">
                       Próximas Actividades
                     </h3>
@@ -364,11 +364,11 @@ const [sleep7DayTrend, setSleep7DayTrend] = useState<SleepTrendData[]>([]);
                     </div>
                   </div>
 
-                  <div className="ngx-card">
+                  <div className="ngx-card flex-1">
                     <h3 className="text-base font-semibold text-white mb-4 pb-2 border-b border-neutral-700/50">
                       Mensajes del AI Coach
                     </h3>
-                    <div className="space-y-3 max-h-48 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-neutral-700 scrollbar-track-neutral-800/50 scrollbar-thumb-rounded-full">
+                    <div className="space-y-3 flex-1 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-neutral-700 scrollbar-track-neutral-800/50 scrollbar-thumb-rounded-full">
                       {isLoadingAiCoachMessages ? (
                         <p className="text-neutral-400 text-sm p-3">Cargando mensajes del coach...</p>
                       ) : aiCoachMessages.length === 0 ? (
@@ -481,32 +481,6 @@ const [sleep7DayTrend, setSleep7DayTrend] = useState<SleepTrendData[]>([]);
                     </div>
                   </div>
 
-                  {/* Accesos Rápidos - Using NGX Design System */}
-                  <div className="ngx-card">
-                    <h3 className="text-base font-semibold text-white mb-4 pb-2 border-b border-neutral-700/50">
-                      Accesos Rápidos
-                    </h3>
-                    <div className="grid grid-cols-1 gap-3">
-                      {[
-                        { icon: Dumbbell, label: "Registrar Entrenamiento", color: "text-orange-400", onClick: () => navigate("/training-log-page") },
-                        { icon: Utensils, label: "Plan Nutricional", color: "text-green-400", onClick: () => navigate("/nutrition-log-page") },
-                        { icon: BarChart3, label: "Ver Biométricas", color: "text-blue-400", onClick: () => navigate("/biometric-log-page") },
-                        { icon: Bot, label: "Chat con AI Coach", color: "text-violet-400", onClick: () => navigate("/chat-page") },
-                      ].map((item, index) => (
-                        <button 
-                          key={index} 
-                          onClick={item.onClick}
-                          className="ngx-btn ngx-btn--secondary w-full justify-between group"
-                        >
-                          <div className="flex items-center">
-                            <item.icon size={18} className={`mr-2.5 flex-shrink-0 ${item.color}`} />
-                            <span className="text-white">{item.label}</span>
-                          </div>
-                          <ChevronRight size={16} className="text-neutral-500 group-hover:text-neutral-300 transition-colors" />
-                        </button>
-                      ))}
-                    </div>
-                  </div>
                 </div>
               </div>
             </div>
