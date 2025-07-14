@@ -255,39 +255,23 @@ const [sleep7DayTrend, setSleep7DayTrend] = useState<SleepTrendData[]>([]);
     }
   };
   return (
-    <div className="min-h-screen bg-neutral-900 text-neutral-100 p-4 sm:p-6 lg:p-8 flex flex-col">
-      {/* Placeholder for Top Global Navigation Bar (visual only) */}
-      <div className="h-16 bg-neutral-800/30 border-b border-neutral-700/50 flex items-center justify-between px-6 mb-6 rounded-t-lg shadow-md">
-        <div className="flex items-center space-x-2">
-          {/* Placeholder for Logo/User Avatar */}
-          <div className="w-8 h-8 bg-brand-violet rounded-full" /> 
-          <span className="font-semibold text-neutral-200">Alicia Koch</span>
-        </div>
-        <nav className="flex items-center space-x-4">
-          {["Overview", "Customers", "Products", "Settings"].map((item) => (
-            <a key={item} href="#" className="text-sm text-neutral-400 hover:text-brand-teal transition-colors">
-              {item}
-            </a>
-          ))}
-          <ThemeToggle />
-        </nav>
-      </div>
+    <div className="min-h-screen bg-neutral-900 text-neutral-100 p-4 sm:p-6 lg:p-8">{/* Removed flex flex-col and top navigation */}
 
-      {/* Dashboard Header Section */}
-      <header className="mb-6 px-1">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4">
-          <h1 className="text-3xl sm:text-4xl font-bold text-neutral-50 tracking-tight">
-            Dashboard
-          </h1>
-          <div className="flex items-center space-x-3 mt-3 sm:mt-0">
-            <Button variant="outline" className="bg-neutral-800/60 border-neutral-700 hover:bg-neutral-700/80 text-neutral-300 hover:text-neutral-100">
-              <CalendarDays size={16} className="mr-2 text-neutral-400" />
-              <span className="text-xs">Ene 20, 2023 - Feb 09, 2023</span>
+      {/* Dashboard Header Section - Compact */}
+      <header className="mb-8">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight mb-1">
+              Dashboard
+            </h1>
+            <p className="text-sm text-neutral-400">Resumen de tu progreso de salud y bienestar</p>
+          </div>
+          <div className="flex items-center space-x-3 mt-4 sm:mt-0">
+            <Button variant="outline" className="bg-neutral-800/60 border-neutral-700 hover:bg-neutral-700/80 text-neutral-300 hover:text-neutral-100 text-xs">
+              <CalendarDays size={14} className="mr-2 text-neutral-400" />
+              Últimos 7 días
             </Button>
-            <Button className="bg-brand-violet hover:bg-brand-violet/90 text-white">
-              <DownloadIcon size={16} className="mr-2" />
-              <span className="text-xs">Descargar</span>
-            </Button>
+            <ThemeToggle />
           </div>
         </div>
         <Tabs defaultValue="resumen" className="w-full">
@@ -336,47 +320,53 @@ const [sleep7DayTrend, setSleep7DayTrend] = useState<SleepTrendData[]>([]);
                 />
               </div>
 
-              {/* Main Content Area (Chart + Sidebar) */}
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* Main Content: Sleep Trend Chart */}
-                <div className="lg:col-span-2">
+              {/* Main Content Area (Chart + Sidebar) - Improved Balance */}
+              <div className="grid grid-cols-1 xl:grid-cols-5 lg:grid-cols-4 gap-6">
+                {/* Main Content: Sleep Trend Chart - More Space */}
+                <div className="xl:col-span-3 lg:col-span-2">
                   <SleepTrendSection sleep7DayTrend={sleep7DayTrend} isLoadingMetrics={isLoadingMetrics} />
                 </div>
                 
-                {/* Sidebar Content */}
-                <div className="lg:col-span-1 space-y-6">
+                {/* Sidebar Content - Better Proportions */}
+                <div className="xl:col-span-2 lg:col-span-2 space-y-4">
                   <HrvTrendSection hrv7DayTrend={hrv7DayTrend} isLoadingMetrics={isLoadingMetrics} />
 
-                  <StyledContentBox title="Próximas Actividades">
-                    <div className="space-y-4">
+                  <div className="ngx-card">
+                    <h3 className="text-base font-semibold text-white mb-4 pb-2 border-b border-neutral-700/50">
+                      Próximas Actividades
+                    </h3>
+                    <div className="space-y-3">
                       {/* Actividad 1 */}
-                      <div className="flex items-start space-x-3">
-                        <CalendarDays className="w-5 h-5 text-amber-400 mt-0.5 flex-shrink-0" />
+                      <div className="flex items-start space-x-3 p-3 bg-neutral-800/40 rounded-lg border border-neutral-700/30">
+                        <CalendarDays className="w-5 h-5 text-orange-400 mt-0.5 flex-shrink-0" />
                         <div>
-                          <h4 className="text-neutral-200 text-sm font-medium">Entrenamiento: Pierna y Core</h4>
-                          <p className="text-xs text-amber-400">Hoy <span className="text-neutral-400">· 10:00 AM - 11:00 AM</span></p>
+                          <h4 className="text-white text-sm font-medium">Entrenamiento: Pierna y Core</h4>
+                          <p className="text-xs text-orange-400">Hoy <span className="text-neutral-400">· 10:00 AM - 11:00 AM</span></p>
                         </div>
                       </div>
                       {/* Actividad 2 */}
-                      <div className="flex items-start space-x-3">
+                      <div className="flex items-start space-x-3 p-3 bg-neutral-800/40 rounded-lg border border-neutral-700/30">
                         <BrainIconLucide className="w-5 h-5 text-violet-400 mt-0.5 flex-shrink-0" />
                         <div>
-                          <h4 className="text-neutral-200 text-sm font-medium">Ejercicio Cognitivo: Enfoque</h4>
+                          <h4 className="text-white text-sm font-medium">Ejercicio Cognitivo: Enfoque</h4>
                           <p className="text-xs text-violet-400">Hoy <span className="text-neutral-400">· 2:30 PM</span></p>
                         </div>
                       </div>
                       {/* Actividad 3 */}
-                      <div className="flex items-start space-x-3">
+                      <div className="flex items-start space-x-3 p-3 bg-neutral-800/40 rounded-lg border border-neutral-700/30">
                         <Users className="w-5 h-5 text-cyan-400 mt-0.5 flex-shrink-0" />
                         <div>
-                          <h4 className="text-neutral-200 text-sm font-medium">Check-in con Coach</h4>
+                          <h4 className="text-white text-sm font-medium">Check-in con Coach</h4>
                           <p className="text-xs text-cyan-400">Mañana <span className="text-neutral-400">· 9:00 AM</span></p>
                         </div>
                       </div>
                     </div>
-                  </StyledContentBox>
+                  </div>
 
-                  <StyledContentBox title="Mensajes del AI Coach">
+                  <div className="ngx-card">
+                    <h3 className="text-base font-semibold text-white mb-4 pb-2 border-b border-neutral-700/50">
+                      Mensajes del AI Coach
+                    </h3>
                     <div className="space-y-3 max-h-48 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-neutral-700 scrollbar-track-neutral-800/50 scrollbar-thumb-rounded-full">
                       {isLoadingAiCoachMessages ? (
                         <p className="text-neutral-400 text-sm p-3">Cargando mensajes del coach...</p>
@@ -488,49 +478,34 @@ const [sleep7DayTrend, setSleep7DayTrend] = useState<SleepTrendData[]>([]);
                         </button>
                       )}
                     </div>
-                  </StyledContentBox>
+                  </div>
 
-                  {/* Fin de Mensajes del AI Coach StyledContentBox */}
-
-                  {/* Accesos Rápidos - Direct Title */}
-                  <div>
-                    <h3 
-                      className={`
-                        text-base font-semibold text-neutral-100 
-                        mb-3 sm:mb-4 
-                        pb-2 border-b border-neutral-700/70
-                      `}
-                    >
+                  {/* Accesos Rápidos - Using NGX Design System */}
+                  <div className="ngx-card">
+                    <h3 className="text-base font-semibold text-white mb-4 pb-2 border-b border-neutral-700/50">
                       Accesos Rápidos
                     </h3>
                     <div className="grid grid-cols-1 gap-3">
                       {[
-                        { icon: Dumbbell, label: "Registrar Entrenamiento", color: "text-sky-400", onClick: () => navigate("/training-log-page") },
-                        { icon: Utensils, label: "Plan Nutricional", color: "text-emerald-400", onClick: () => navigate("/nutrition-log-page") },
-                        { icon: BarChart3, label: "Ver Biométricas", color: "text-purple-400", onClick: () => navigate("/biometric-log-page") },
-                        { icon: Bot, label: "Chat con AI Coach", color: "text-brand-violet", onClick: () => navigate("/chat-page") },
+                        { icon: Dumbbell, label: "Registrar Entrenamiento", color: "text-orange-400", onClick: () => navigate("/training-log-page") },
+                        { icon: Utensils, label: "Plan Nutricional", color: "text-green-400", onClick: () => navigate("/nutrition-log-page") },
+                        { icon: BarChart3, label: "Ver Biométricas", color: "text-blue-400", onClick: () => navigate("/biometric-log-page") },
+                        { icon: Bot, label: "Chat con AI Coach", color: "text-violet-400", onClick: () => navigate("/chat-page") },
                       ].map((item, index) => (
                         <button 
                           key={index} 
                           onClick={item.onClick}
-                          className={`
-                            flex items-center justify-between w-full p-3 
-                            bg-neutral-700/40 hover:bg-neutral-600/70 
-                            border border-neutral-600/80 hover:border-neutral-500/90
-                            rounded-lg text-left text-sm font-medium text-neutral-200 
-                            transition-all duration-200 ease-in-out group
-                          `}
+                          className="ngx-btn ngx-btn--secondary w-full justify-between group"
                         >
                           <div className="flex items-center">
                             <item.icon size={18} className={`mr-2.5 flex-shrink-0 ${item.color}`} />
-                            {item.label}
+                            <span className="text-white">{item.label}</span>
                           </div>
-                          <ChevronRight size={16} className={`text-neutral-500 group-hover:text-neutral-300 transition-colors ${item.color.replace("text-", "group-hover:text-")}`} />
+                          <ChevronRight size={16} className="text-neutral-500 group-hover:text-neutral-300 transition-colors" />
                         </button>
                       ))}
                     </div>
                   </div>
-                  {/* Fin de Accesos Rápidos - Direct Title */}
                 </div>
               </div>
             </div>
