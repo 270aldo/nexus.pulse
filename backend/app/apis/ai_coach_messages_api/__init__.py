@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from typing import List, Optional
 import datetime
@@ -30,7 +30,7 @@ class AICoachMessageResponse(BaseModel):
 @router.get("/", response_model=List[AICoachMessageResponse])
 def get_ai_coach_messages(
     unread_only: bool = False,
-    user: AuthorizedUser = None,
+    user: AuthorizedUser,
 ) -> List[AICoachMessageResponse]:
     """Return AI Coach messages for the authenticated user."""
 
@@ -41,6 +41,9 @@ def get_ai_coach_messages(
         raise HTTPException(status_code=500, detail="Supabase configuration missing")
 
     client: Client = create_client(supabase_url, supabase_key)
+
+    if user is None:
+        raise HTTPException(status_code=401, detail="Authentication required")
 
     try:
         query = client.table("ai_coach_messages").select("*").eq("user_id", user.sub)

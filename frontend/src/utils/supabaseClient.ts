@@ -286,7 +286,7 @@ export const fetchContentItemById = async (itemId: string) => {
       estimated_read_time_minutes,
       duration_minutes,
       category_id,
-      tags:content_item_tags!inner(tag:content_tags!inner(id, name))
+      tags:content_item_tags(tag:content_tags(id, name))
     `)
     .eq('id', itemId)
     .maybeSingle(); // Expect a single item or null
@@ -325,7 +325,7 @@ export const fetchContentItems = async () => {
       published_at,
       estimated_read_time_minutes,
       duration_minutes,
-      tags:content_item_tags!inner(tag:content_tags!inner(id, name))
+      tags:content_item_tags(tag:content_tags(id, name))
     `)
     .order('published_at', { ascending: false });
 
@@ -367,7 +367,7 @@ export const fetchRelatedContentItems = async (
       category_id,
       estimated_read_time_minutes,
       duration_minutes,
-      tags:content_item_tags!inner(tag:content_tags!inner(id, name))
+      tags:content_item_tags(tag:content_tags(id, name))
     `)
     .eq('category_id', categoryId)
     .neq('id', excludeId)
