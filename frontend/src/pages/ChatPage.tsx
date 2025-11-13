@@ -1,5 +1,6 @@
 
 import { supabase } from "../utils/supabaseClient";
+import { apiClient } from "../utils/apiClient";
 import React, { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -99,19 +100,14 @@ const ChatPage: React.FC = () => {
     setCurrentMessage("");
 
     try {
-      const response = await fetch("http://localhost:8000/routes/chat", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ user_id: userId, message: userMessageText }),
-      });
+      const { success, data, error } = await apiClient.post<{
+        user_message: { id: string; created_at: string };
+        ai_message: { id: string; text_content: string; created_at: string };
+      }>("/routes/chat", { user_id: userId, message: userMessageText });
 
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
+      if (!success || !data) {
+        throw new Error(error || "Error desconocido al enviar el mensaje");
       }
-
-      const data = await response.json();
 
       setMessages((prev) =>
         prev.map((msg) =>

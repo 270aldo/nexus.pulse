@@ -126,28 +126,29 @@ async def get_current_user_data(request: Request, authorization: Optional[str] =
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED, detail="No access for you. (User not found/invalid token)"
             )
-    except GoTrueApiError as e_gotrue: # Specific catch for GoTrueApiError if it was imported
-        error_message = str(e_gotrue)
-        if hasattr(e_gotrue, 'message') and e_gotrue.message: 
-            error_message = e_gotrue.message
-        status_code_from_error = e_gotrue.status if hasattr(e_gotrue, 'status') else 401
-        logger.error(
-            "GoTrueApiError: Status %s - Message: %s",
-            status_code_from_error,
-            error_message,
-        )
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, 
-            detail=f"No access for you. (Auth Error: {error_message})"
-        ) from e_gotrue
     except Exception as e_generic: # Generic catch for other errors
+        if GoTrueApiError is not None and isinstance(e_generic, GoTrueApiError):
+            error_message = str(e_generic)
+            if getattr(e_generic, 'message', None):
+                error_message = e_generic.message
+            status_code_from_error = getattr(e_generic, 'status', status.HTTP_401_UNAUTHORIZED)
+            logger.error(
+                "GoTrueApiError: Status %s - Message: %s",
+                status_code_from_error,
+                error_message,
+            )
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail=f"No access for you. (Auth Error: {error_message})"
+            ) from e_generic
+
         logger.exception(
             "Unexpected error during token validation: %s - %s",
             type(e_generic).__name__,
             e_generic,
         )
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, 
+            status_code=status.HTTP_401_UNAUTHORIZED,
             detail=f"No access for you. (Unexpected Error: {type(e_generic).__name__})"
         ) from e_generic
 
