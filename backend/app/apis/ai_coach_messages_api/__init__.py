@@ -1,10 +1,12 @@
-from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel
-from typing import List, Optional
 import datetime
 import os
+from typing import List, Optional
+
+from fastapi import APIRouter, Depends, HTTPException
+from pydantic import BaseModel
 from supabase import create_client, Client
 from app.auth import AuthorizedUser
+from app.demo_data import get_demo_dataset, is_demo_mode
 
 # Import get_current_user_id if you have it defined in an accessible auth utility
 # For now, we'll mock it or assume it's passed if needed.
@@ -33,6 +35,13 @@ def get_ai_coach_messages(
     user: AuthorizedUser = None,
 ) -> List[AICoachMessageResponse]:
     """Return AI Coach messages for the authenticated user."""
+
+    if is_demo_mode():
+        dataset = get_demo_dataset().for_user(user.sub if user else "demo-user-1")
+        messages = dataset.ai_coach_messages
+        if unread_only:
+            messages = [m for m in messages if not m.get("read_at")]
+        return [AICoachMessageResponse(**record) for record in messages]
 
     supabase_url = os.environ.get("SUPABASE_URL")
     supabase_key = os.environ.get("SUPABASE_ANON_KEY")

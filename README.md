@@ -164,6 +164,21 @@ const data = await response.json();
 
 ---
 
+## 🧪 Demo / Staging Mode (mock data)
+
+Use the built-in demo mode to preview the API without hitting Supabase:
+
+```bash
+export STAGING_DEMO_MODE=true
+make run-backend  # Carga mock data y middleware de seguridad (CORS, headers, rate limits)
+```
+
+- Mock data lives in `backend/mock_data/staging.json` and is exposed under `/routes/demo/*`.
+- Core endpoints like AI Coach messages and HealthKit sync respect `STAGING_DEMO_MODE` and fall back to the mock dataset.
+- CORS headers, security headers, and rate limiting middleware are enabled automatically in this mode.
+
+---
+
 ## 🚀 **Quick Deploy**
 
 ### **Production Readiness Checklist**

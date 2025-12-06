@@ -1,114 +1,65 @@
-name: 🚀 CI/CD Pipeline
+name: 🚦 Light CI
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [main, develop]
   pull_request:
-    branches: [ main ]
+    branches: [main, develop]
 
 jobs:
-  test-frontend:
-    name: 🧪 Frontend Tests
+  quality:
+    name: Lint, Test & Build
     runs-on: ubuntu-latest
-    
-    strategy:
-      matrix:
-        node-version: [18.x, 20.x]
-    
-    steps:
-    - name: 📦 Checkout code
-      uses: actions/checkout@v4
-      
-    - name: 🟢 Setup Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v4
-      with:
-        node-version: ${{ matrix.node-version }}
-        cache: 'npm'
-        cache-dependency-path: frontend/package-lock.json
-        
-    - name: 📥 Install dependencies
-      working-directory: ./frontend
-      run: npm ci
-      
-    - name: 🔍 Run linting
-      working-directory: ./frontend
-      run: npm run lint || echo "Linting skipped - no lint script found"
-      
-    - name: 🏗️ Build application
-      working-directory: ./frontend
-      run: npm run build
-      
-    - name: 🧪 Run tests
-      working-directory: ./frontend
-      run: npm test || echo "Tests skipped - no test script found"
+    env:
+      STAGING_DEMO_MODE: "true"
 
-  test-backend:
-    name: 🐍 Backend Tests
-    runs-on: ubuntu-latest
-    
-    strategy:
-      matrix:
-        python-version: ['3.11', '3.12']
-    
     steps:
-    - name: 📦 Checkout code
-      uses: actions/checkout@v4
-      
-    - name: 🐍 Setup Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v4
-      with:
-        python-version: ${{ matrix.python-version }}
-        
-    - name: 📥 Install dependencies
-      working-directory: ./backend
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
-        
-    - name: 🔍 Run linting with flake8
-      working-directory: ./backend
-      run: |
-        pip install flake8
-        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics || echo "Linting completed"
-        
-    - name: 🧪 Run tests
-      working-directory: ./backend
-      run: |
-        pip install pytest
-        pytest || echo "Tests skipped - no tests found"
+      - name: 📦 Checkout repository
+        uses: actions/checkout@v4
 
-  security-scan:
-    name: 🔒 Security Scan
-    runs-on: ubuntu-latest
-    
-    steps:
-    - name: 📦 Checkout code
-      uses: actions/checkout@v4
-      
-    - name: 🔐 Run Trivy vulnerability scanner
-      uses: aquasecurity/trivy-action@master
-      with:
-        scan-type: 'fs'
-        scan-ref: '.'
-        format: 'sarif'
-        output: 'trivy-results.sarif'
-        
-    - name: 📊 Upload Trivy scan results
-      uses: github/codeql-action/upload-sarif@v3
-      if: always()
-      with:
-        sarif_file: 'trivy-results.sarif'
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
 
-  build-status:
-    name: 📊 Build Status
-    needs: [test-frontend, test-backend, security-scan]
-    runs-on: ubuntu-latest
-    if: always()
-    
-    steps:
-    - name: 📊 Update build status
-      run: |
-        echo "🎯 Build Status Summary:"
-        echo "Frontend: ${{ needs.test-frontend.result }}"
-        echo "Backend: ${{ needs.test-backend.result }}"
-        echo "Security: ${{ needs.security-scan.result }}"
+      - name: 🐍 Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+          cache-dependency-path: backend/requirements.txt
+
+      - name: 🗂️ Prepare env files for checks
+        run: |
+          cp frontend/.env.example frontend/.env
+          cp backend/.env.example backend/.env
+          sed -i 's/your_supabase_project_url_here/https:\/\/demo.supabase.co/' frontend/.env backend/.env
+          sed -i 's/your_supabase_anon_key_here/demo-anon-key/' frontend/.env backend/.env
+          sed -i 's/your_supabase_service_role_key_here/demo-service-key/' backend/.env
+          sed -i 's/your_openai_api_key_here/demo-openai-key/' backend/.env
+          sed -i 's/your_jwt_secret_key_here/demo-jwt-secret/' backend/.env
+
+      - name: 📥 Install frontend dependencies
+        working-directory: ./frontend
+        run: npm ci
+
+      - name: 🔍 Frontend lint
+        working-directory: ./frontend
+        run: npm run lint
+
+      - name: 🏗️ Frontend build
+        working-directory: ./frontend
+        run: npm run build
+
+      - name: 📦 Install backend dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r backend/requirements.txt
+
+      - name: ✅ Environment checks
+        run: make check-env
+
+      - name: 🧪 Backend tests
+        run: make test

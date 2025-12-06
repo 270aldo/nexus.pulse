@@ -1,4 +1,5 @@
 # Standard library imports
+import logging
 import os
 from typing import List, Optional, Dict, Any
 
@@ -6,7 +7,7 @@ from typing import List, Optional, Dict, Any
 from fastapi import APIRouter, Depends, HTTPException, Header, Request, status
 from pydantic import BaseModel, Field, HttpUrl
 from supabase import create_client, Client
-import logging
+from app.demo_data import DemoDataset, get_demo_dataset, is_demo_mode
 
 # Attempt to import Supabase/GoTrue specific error
 try:
@@ -74,6 +75,14 @@ class SyncResponse(BaseModel):
 async def get_current_user_data(request: Request, authorization: Optional[str] = Header(None)) -> Dict[str, Any]:
     logger.debug("get_current_user_data invoked")
     logger.debug("Attempting to get Supabase client")
+    if is_demo_mode():
+        logger.info("Demo mode active; returning mock user for health data")
+        return {
+            "id": "demo-user-1",
+            "email": "demo.user@nexus.pulse",
+            "name": "Demo User",
+        }
+
     supabase_url = os.environ.get("SUPABASE_URL")
     supabase_anon_key = os.environ.get("SUPABASE_ANON_KEY")
 
@@ -160,7 +169,17 @@ async def sync_health_kit_data(
     request_data: HealthKitSyncRequest,
     current_user: Dict[str, Any] = Depends(get_current_user_data) # Use the original name
 ):
-    user_id = current_user.get("id") 
+    if is_demo_mode():
+        logger.info("Demo mode active; returning mock sync response")
+        dataset: DemoDataset = get_demo_dataset().for_user(current_user.get("id"))
+        return SyncResponse(
+            message="Demo data accepted",
+            quantity_samples_imported=len(dataset.health_metrics),
+            category_samples_imported=0,
+            workouts_imported=0,
+        )
+
+    user_id = current_user.get("id")
     if not user_id:
         logger.error("User ID not found in token after auth dependency")
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="User ID not available")
