@@ -83,8 +83,8 @@
 
 ### **✅ Current Status**
 - Frontend: Ejecutándose en `http://localhost:5173`; TypeScript strict continúa deshabilitado mientras resolvemos deudas de tipado.
-- Backend: Middleware de seguridad montado, pero únicamente los endpoints de health-check están activos mientras reincorporamos los routers funcionales.
-- Autenticación: La dependencia `get_authorized_user` sigue siendo un placeholder temporal hasta reactivar la integración real.
+- Backend: Middleware de seguridad montado, con health-check activo y nuevos endpoints de logging/núcleo priorizados mientras reincorporamos routers adicionales.
+- Autenticación: `get_authorized_user` ahora valida tokens de Supabase de forma sencilla para proteger los endpoints críticos.
 - Pruebas: Cobertura reducida (~1 %) con pytest; suites de Vitest y pruebas de integración aún pendientes.
 
 ---
