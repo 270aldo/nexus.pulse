@@ -258,7 +258,10 @@ export class HttpClient<SecurityDataType = unknown> {
         throw new Error("Response not OK");
       }
 
-      const reader = response.body.getReader();
+      const reader = response.body?.getReader();
+      if (!reader) {
+        throw new Error("Readable stream is not available on the response body.");
+      }
       const decoder = new TextDecoder();
       const contentType = response.headers.get("Content-Type");
 
@@ -273,8 +276,7 @@ export class HttpClient<SecurityDataType = unknown> {
           try {
             data = JSON.parse(chunk);
           } catch (error) {
-            throw new Error(error);
-            continue;
+            throw new Error(error instanceof Error ? error.message : String(error));
           }
         } else if (contentType === "application/octet-stream") {
           data = new Uint8Array(value);
@@ -286,7 +288,7 @@ export class HttpClient<SecurityDataType = unknown> {
         yield data as T;
       }
     } catch (error) {
-      throw new Error(error);
+      throw new Error(error instanceof Error ? error.message : String(error));
     } finally {
       if (cancelToken) {
         this.abortControllers.delete(cancelToken);

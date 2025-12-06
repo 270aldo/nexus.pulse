@@ -12,7 +12,7 @@
     "esModuleInterop": false,
     "allowSyntheticDefaultImports": true,
     "allowImportingTsExtensions": true,
-    "strict": false, // TODO: Enable strict mode after fixing remaining type issues
+    "strict": true,
     "forceConsistentCasingInFileNames": true,
     "module": "ESNext",
     "moduleResolution": "Node",
@@ -62,10 +62,7 @@
     "src"
   ],
   "exclude": [
-    "src/brain/Brain.ts",
-    "src/brain/BrainRoute.ts",
-    "src/brain/data-contracts.ts",
-    "src/brain/http-client.ts"
+    "src/brain/**/*"
   ],
   "references": [
     {

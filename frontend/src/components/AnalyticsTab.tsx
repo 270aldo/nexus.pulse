@@ -162,14 +162,16 @@ const AnalyticsTab: React.FC = () => {
 
         // Aggregate metrics for the day
         Object.keys(metricConfigs).forEach(metric => {
+          const metricKey = metric as keyof Omit<AnalyticsData, 'date'>;
           const entries = dayData.filter(entry => entry.metric_type === (metric === 'sleep' ? 'sleep_hours' : metric));
+
           if (entries.length > 0) {
             // For most metrics, take the average. For steps, take the sum.
-            if (metric === 'steps') {
-              result[metric as keyof AnalyticsData] = entries.reduce((sum, entry) => sum + entry.value_numeric, 0) as any;
+            if (metricKey === 'steps') {
+              result[metricKey] = entries.reduce((sum, entry) => sum + entry.value_numeric, 0);
             } else {
               const avg = entries.reduce((sum, entry) => sum + entry.value_numeric, 0) / entries.length;
-              result[metric as keyof AnalyticsData] = parseFloat(avg.toFixed(1)) as any;
+              result[metricKey] = parseFloat(avg.toFixed(1));
             }
           }
         });
@@ -183,8 +185,8 @@ const AnalyticsTab: React.FC = () => {
       const newSummaries: Record<string, MetricSummary> = {};
       Object.keys(metricConfigs).forEach(metric => {
         const validData = processedData
-          .map(d => d[metric as keyof AnalyticsData] as number)
-          .filter(v => v !== null);
+          .map(d => d[metric as keyof AnalyticsData])
+          .filter((v): v is number => v !== null);
         
         if (validData.length > 0) {
           const current = validData[validData.length - 1];

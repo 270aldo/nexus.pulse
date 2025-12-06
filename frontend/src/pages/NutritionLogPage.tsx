@@ -14,7 +14,6 @@ import { Calendar as CalendarIcon, ChevronLeft, PlusCircle, Trash2, MinusCircle 
 import { useState, useEffect } from "react"; // Added useEffect
 import { useNavigate } from "react-router-dom";
 import { Toaster, toast } from "sonner";
-import { v4 as uuidv4 } from 'uuid';
 import { supabase } from "../utils/supabaseClient";
 import { useAppContext } from "../components/AppProvider";
 import { subDays, format as formatDateFns, eachDayOfInterval, startOfDay as startOfDayFns, parseISO as parseISODateFns, isValid as isValidDateFns } from 'date-fns'; // Para dashboard de calorías
@@ -367,6 +366,7 @@ const NutritionLogPageContent = () => {
 
     // Get or create the nutrition record for the day
     let registroNutricionId: string | null = null;
+    const targetDate = selectedDate ?? new Date();
     
     try {
       // First, try to find existing record
@@ -374,7 +374,7 @@ const NutritionLogPageContent = () => {
         .from("registros_nutricion")
         .select("id")
         .eq("user_id", session.user.id)
-        .eq("fecha_registro", format(selectedDate || new Date(), "yyyy-MM-dd"))
+        .eq("fecha_registro", format(targetDate, "yyyy-MM-dd"))
         .single();
 
       if (findError && findError.code !== 'PGRST116') {
@@ -390,7 +390,7 @@ const NutritionLogPageContent = () => {
           .from("registros_nutricion")
           .insert({
             user_id: session.user.id,
-            fecha_registro: format(selectedDate, "yyyy-MM-dd"),
+            fecha_registro: format(targetDate, "yyyy-MM-dd"),
             horarios_preferidos: timingNutricionalActivo ? horariosPreferidos : {},
             timing_activo: timingNutricionalActivo,
             agua_consumida_ml: aguaConsumida,
