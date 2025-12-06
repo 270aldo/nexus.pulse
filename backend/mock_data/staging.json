@@ -1,0 +1,64 @@
+{
+  "users": [
+    {
+      "id": "demo-user-1",
+      "email": "demo.user@nexus.pulse",
+      "name": "Demo User"
+    },
+    {
+      "id": "demo-user-2",
+      "email": "coach.mode@nexus.pulse",
+      "name": "Coach Mode"
+    }
+  ],
+  "ai_coach_messages": [
+    {
+      "id": "msg-001",
+      "user_id": "demo-user-1",
+      "title": "Bienvenido a Pulse",
+      "body": "Explora el panel con datos simulados y flujos de IA sin riesgo.",
+      "message_type": "INFO",
+      "urgency": "LOW",
+      "created_at": "2024-01-01T10:00:00Z",
+      "deep_link": null,
+      "read_at": null
+    },
+    {
+      "id": "msg-002",
+      "user_id": "demo-user-2",
+      "title": "Recuperación activa",
+      "body": "Se recomienda una sesión ligera y 7-8h de sueño para optimizar la semana.",
+      "message_type": "RECOMMENDATION",
+      "urgency": "MEDIUM",
+      "created_at": "2024-01-02T09:45:00Z",
+      "deep_link": "/programas/recuperacion",
+      "read_at": null
+    }
+  ],
+  "health_metrics": [
+    {
+      "user_id": "demo-user-1",
+      "date": "2024-01-01",
+      "steps": 10840,
+      "sleep_hours": 7.3,
+      "resting_heart_rate": 61,
+      "calories_burned": 2180
+    },
+    {
+      "user_id": "demo-user-1",
+      "date": "2024-01-02",
+      "steps": 9640,
+      "sleep_hours": 6.8,
+      "resting_heart_rate": 63,
+      "calories_burned": 2050
+    },
+    {
+      "user_id": "demo-user-2",
+      "date": "2024-01-01",
+      "steps": 7800,
+      "sleep_hours": 8.1,
+      "resting_heart_rate": 58,
+      "calories_burned": 1900
+    }
+  ]
+}

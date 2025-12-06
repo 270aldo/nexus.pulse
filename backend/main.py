@@ -5,6 +5,15 @@ import logging
 import dotenv
 from fastapi import FastAPI, APIRouter, Depends
 
+from app.demo_data import is_demo_mode, load_demo_dataset
+from app.middleware import (
+    CORSSecurityMiddleware,
+    GlobalErrorHandler,
+    InputSanitizationMiddleware,
+    RateLimitingMiddleware,
+    SecurityHeadersMiddleware,
+)
+
 dotenv.load_dotenv()
 
 LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO").upper()
@@ -63,6 +72,10 @@ def import_api_routers() -> APIRouter:
     api_module_prefix = "app.apis."
 
     for name in api_names:
+        # Skip demo endpoints in non-demo environments to avoid leaking mock data
+        if name == "demo" and not is_demo_mode():
+            logger.info("Skipping demo routers (STAGING_DEMO_MODE is disabled)")
+            continue
         logger.info("Importing API: %s", name)
         try:
             api_module = __import__(api_module_prefix + name, fromlist=[name])
@@ -96,10 +109,28 @@ def get_firebase_config() -> dict | None:
     return None
 
 
+def _configure_middlewares(app: FastAPI) -> None:
+    """Attach shared middleware stack including security, CORS and rate limiting."""
+    allowed_origins = os.getenv("ALLOWED_ORIGINS")
+    origins = [o.strip() for o in allowed_origins.split(",")] if allowed_origins else None
+
+    app.add_middleware(GlobalErrorHandler)
+    app.add_middleware(InputSanitizationMiddleware)
+    app.add_middleware(CORSSecurityMiddleware, allowed_origins=origins)
+    app.add_middleware(SecurityHeadersMiddleware)
+    app.add_middleware(RateLimitingMiddleware)
+
+
 def create_app() -> FastAPI:
     """Create the app. This is called by uvicorn with the factory option to construct the app object."""
     app = FastAPI()
+
+    if is_demo_mode():
+        load_demo_dataset()
+
     app.include_router(import_api_routers())
+
+    _configure_middlewares(app)
 
     for route in app.routes:
         if hasattr(route, "methods"):
