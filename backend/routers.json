@@ -1,5 +1,15 @@
 {
   "routers": {
+    "system": {
+      "name": "system",
+      "version": "2025-06-01",
+      "disableAuth": true
+    },
+    "activity_logging": {
+      "name": "activity_logging",
+      "version": "2025-06-01",
+      "disableAuth": false
+    },
     "health_data": {
       "name": "health_data",
       "version": "2025-05-18T00:45:21",

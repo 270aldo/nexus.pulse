@@ -6,15 +6,8 @@ import types
 
 import pytest
 
-# Provide stub for databutton_app dependency so main.py can be imported
-sys.modules["databutton_app"] = types.ModuleType("databutton_app")
-sys.modules["databutton_app.mw"] = types.ModuleType("databutton_app.mw")
-stub = types.ModuleType("databutton_app.mw.auth_mw")
-stub.AuthConfig = object
-def _dummy():
-    pass
-stub.get_authorized_user = _dummy
-sys.modules["databutton_app.mw.auth_mw"] = stub
+BACKEND_PATH = Path(__file__).resolve().parents[1] / "backend"
+sys.path.insert(0, str(BACKEND_PATH))
 
 # Dynamically import backend/main.py as module 'backend_main'
 MODULE_PATH = Path(__file__).resolve().parents[1] / "backend" / "main.py"
@@ -30,7 +23,9 @@ def test_get_router_config_missing(monkeypatch):
 
     monkeypatch.setattr(Path, "exists", fake_exists)
     cfg = backend_main.get_router_config()
-    assert cfg == {}
+    assert "routers" in cfg
+    # Critical routers should be injected automatically
+    assert set(cfg["routers"]).issuperset({"system", "activity_logging"})
 
 
 def test_get_router_config_invalid(monkeypatch):

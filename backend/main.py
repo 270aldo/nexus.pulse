@@ -5,6 +5,8 @@ import logging
 import dotenv
 from fastapi import FastAPI, APIRouter, Depends
 
+from app.auth import get_authorized_user
+
 dotenv.load_dotenv()
 
 LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO").upper()
@@ -14,22 +16,31 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-from databutton_app.mw.auth_mw import AuthConfig, get_authorized_user
+CRITICAL_ROUTERS = {
+    # Health check and auth introspection must stay available even if routers.json is missing
+    "system": {"name": "system", "disableAuth": True},
+    # Logging endpoints should require authentication by default
+    "activity_logging": {"name": "activity_logging", "disableAuth": False},
+}
 
 
 def get_router_config() -> dict:
-    """Return the router configuration or an empty dict if not found."""
+    """Return the router configuration and inject critical defaults if missing."""
     config_path = pathlib.Path("routers.json")
+    config: dict[str, dict] = {"routers": {}}
 
-    if not config_path.exists():
-        # Missing config is not fatal; just return an empty configuration
-        return {}
+    if config_path.exists():
+        try:
+            with config_path.open() as f:
+                config = json.load(f)
+        except json.JSONDecodeError as exc:
+            raise ValueError(f"Invalid router configuration: {exc}") from exc
 
-    try:
-        with config_path.open() as f:
-            return json.load(f)
-    except json.JSONDecodeError as exc:
-        raise ValueError(f"Invalid router configuration: {exc}") from exc
+    routers_section = config.setdefault("routers", {})
+    for name, defaults in CRITICAL_ROUTERS.items():
+        routers_section.setdefault(name, defaults)
+
+    return config
 
 
 def is_auth_disabled(router_config: dict | None, name: str) -> bool:
@@ -113,13 +124,7 @@ def create_app() -> FastAPI:
         app.state.auth_config = None
     else:
         logger.info("Firebase config found")
-        auth_config = {
-            "jwks_url": "https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com",
-            "audience": firebase_config["projectId"],
-            "header": "authorization",
-        }
-
-        app.state.auth_config = AuthConfig(**auth_config)
+        app.state.auth_config = firebase_config
 
     return app
 
