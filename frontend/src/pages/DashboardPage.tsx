@@ -5,6 +5,7 @@ import KPIValueCard from "../components/KPIValueCard"; // Import the new KPI car
 import SleepTrendSection from "../components/SleepTrendSection"; // Import SleepTrendSection
 import HrvTrendSection from "../components/HrvTrendSection"; // Import HrvTrendSection
 import { Dumbbell, Apple, ClipboardList, Smile, HeartPulse, CheckCircle2, Bed, Activity as ActivityIcon, Footprints, BarChartHorizontalBig, CalendarDays, Brain as BrainIconLucide, Users, TrendingUp, AlertTriangle, Bot, Target, LayoutDashboard, Utensils, BarChart3, ChevronRight, Settings, LogOut, BookOpenText, Info, MessageCircleWarning, Award, Lightbulb, BellRing, Link as LinkIcon, Download as DownloadIcon } from 'lucide-react'; // Added DownloadIcon
+import jsPDF from "jspdf";
 import { supabase, fetchAllSparklineData } from "../utils/supabaseClient"; // Import supabase client
 import { subDays, format, eachDayOfInterval, startOfDay, parseISO, isValid } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -19,6 +20,26 @@ import { ThemeToggle } from "../components/ThemeToggle";
 import AnalyticsTab from "../components/AnalyticsTab";
 import ReportsTab from "../components/ReportsTab";
 import NotificationsTab from "../components/NotificationsTab";
+import { featureFlags } from "../config/featureFlags";
+import { getTrialStatus, type TrialStatus } from "../utils/trialUtils";
+
+const AI_TIPS_OF_DAY = [
+  {
+    title: "Micro-hábito de respiración",
+    body: "Realiza 3 minutos de respiración 4-7-8 para reducir la carga simpática antes de tus sesiones de foco.",
+    action: "Programa un recordatorio antes de tu siguiente bloque profundo."
+  },
+  {
+    title: "Ciclos de movimiento consciente",
+    body: "Cada 50 minutos levántate, camina 2 minutos y realiza 8 sentadillas lentas para mantener glucosa y agudeza mental estables.",
+    action: "Hazlo después de cada reunión o bloque creativo."
+  },
+  {
+    title: "Nutrición rápida para claridad",
+    body: "Añade 20-30g de proteína en tu primera comida para estabilizar energía y reducir cravings en la tarde.",
+    action: "Ten un shaker listo o un snack rico en proteína al alcance."
+  }
+];
 
 
 const DashboardPageContent: React.FC = () => { // Renombrar el contenido original
@@ -28,6 +49,8 @@ const DashboardPageContent: React.FC = () => { // Renombrar el contenido origina
   const [steps, setSteps] = useState<string | null>(null);
   const [hrv, setHrv] = useState<string | null>(null);
   const [isLoadingMetrics, setIsLoadingMetrics] = useState<boolean>(true);
+  const [trialStatus, setTrialStatus] = useState<TrialStatus>(() => getTrialStatus(featureFlags.trialLengthDays));
+  const [dailyTip, setDailyTip] = useState(AI_TIPS_OF_DAY[0]);
   // const [userId, setUserId] = useState<string | null>(null); // Replaced by currentUserId from useAppContext
 
 interface AICoachMessage {
@@ -46,11 +69,11 @@ const [isLoadingAiCoachMessages, setIsLoadingAiCoachMessages] = useState<boolean
 
 
 
-interface HrvTrendData {
-  date: string; // Formatted date e.g., "10 may"
-  hrv: number | null;
-}
-const [hrv7DayTrend, setHrv7DayTrend] = useState<HrvTrendData[]>([]);
+  interface HrvTrendData {
+    date: string; // Formatted date e.g., "10 may"
+    hrv: number | null;
+  }
+  const [hrv7DayTrend, setHrv7DayTrend] = useState<HrvTrendData[]>([]);
 
 interface SleepTrendData {
   date: string; // Formatted date e.g., "10 may"
@@ -79,7 +102,14 @@ const [sparklineData, setSparklineData] = useState<{
   mood: [],
   stress: []
 });
-const [isLoadingSparklines, setIsLoadingSparklines] = useState<boolean>(true);
+  const [isLoadingSparklines, setIsLoadingSparklines] = useState<boolean>(true);
+
+  useEffect(() => {
+    setTrialStatus(getTrialStatus(featureFlags.trialLengthDays));
+    const today = new Date();
+    const tipIndex = today.getDate() % AI_TIPS_OF_DAY.length;
+    setDailyTip(AI_TIPS_OF_DAY[tipIndex]);
+  }, []);
 
   // useEffect para obtener el userId - REMOVED as currentUserId comes from AppContext
   // useEffect(() => {
@@ -279,6 +309,34 @@ const [isLoadingSparklines, setIsLoadingSparklines] = useState<boolean>(true);
     fetchAiCoachMessages();
   }, [currentUserId, isLoadingSession]); // Depend on currentUserId from AppContext
 
+  const handleUpgradeClick = () => {
+    window.open(featureFlags.genesisUpgradeUrl, '_blank');
+  };
+
+  const handleQuickWeeklyReportDownload = () => {
+    if (!featureFlags.weeklyPdfReportsEnabled) {
+      toast.error("Los reportes semanales están deshabilitados en este entorno.");
+      return;
+    }
+
+    const doc = new jsPDF();
+    doc.setFontSize(16);
+    doc.text("Reporte semanal NGX Pulse", 14, 20);
+
+    doc.setFontSize(12);
+    doc.text(`Sueño promedio: ${sleepHours ?? 'sin datos'}`, 14, 35);
+    doc.text(`HRV promedio: ${hrv ?? 'sin datos'}`, 14, 43);
+    doc.text(`Pasos recientes: ${steps ?? 'sin datos'}`, 14, 51);
+    doc.text(`Estado Lite: ${featureFlags.isLiteMode ? 'Activa' : 'Desactivada'}`, 14, 59);
+
+    doc.text("Tip de IA del día:", 14, 73);
+    const wrappedTip = doc.splitTextToSize(`${dailyTip.title} — ${dailyTip.body}`, 180);
+    doc.text(wrappedTip, 14, 80);
+
+    doc.save("reporte-semanal-lite.pdf");
+    toast.success("Reporte PDF semanal generado.");
+  };
+
   const handleLogoutClick = async () => {
     try {
       const { error } = await supabase.auth.signOut();
@@ -316,6 +374,33 @@ const [isLoadingSparklines, setIsLoadingSparklines] = useState<boolean>(true);
             <ThemeToggle />
           </div>
         </div>
+        {featureFlags.isLiteMode && (
+          <div className="mb-4">
+            <div className="bg-amber-900/20 border border-amber-500/30 rounded-lg p-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p className="text-amber-200 text-xs font-semibold uppercase tracking-wide">Pulse Lite</p>
+                <p className="text-white text-sm sm:text-base font-semibold">
+                  {trialStatus.expired ? "Acceso Lite finalizado" : `Quedan ${trialStatus.daysRemaining} días de prueba Lite`}
+                </p>
+                <p className="text-neutral-200 text-xs sm:text-sm">
+                  Programas avanzados e integraciones premium se activan al migrar a GENESIS.
+                </p>
+              </div>
+              <div className="flex gap-2 flex-col sm:flex-row w-full sm:w-auto">
+                <Button className="bg-amber-500 hover:bg-amber-400 text-black" onClick={handleUpgradeClick}>
+                  Upgrade a GENESIS
+                </Button>
+                <Button
+                  variant="outline"
+                  className="border-amber-400 text-amber-200 hover:bg-amber-900/40"
+                  onClick={handleQuickWeeklyReportDownload}
+                >
+                  Exportar PDF semanal
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
         <Tabs defaultValue="resumen" className="w-full">
           <TabsList className="bg-neutral-800/60 border border-neutral-700/70 p-1 rounded-lg">
             <TabsTrigger value="resumen" className="text-xs data-[state=active]:bg-brand-violet/20 data-[state=active]:text-brand-violet data-[state=active]:shadow-sm hover:text-neutral-100 text-neutral-400 px-3 py-1.5">Resumen</TabsTrigger>
@@ -375,6 +460,76 @@ const [isLoadingSparklines, setIsLoadingSparklines] = useState<boolean>(true);
                   iconColor="text-sky-400"
                   isLoading={false} // Assuming this part isn't tied to isLoadingMetrics for now
                 />
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                {featureFlags.aiTipOfDayEnabled && (
+                  <div className="ngx-card flex flex-col gap-3">
+                    <div className="flex items-center gap-3">
+                      <Lightbulb className="w-5 h-5 text-amber-300" />
+                      <div>
+                        <p className="text-xs uppercase tracking-wide text-amber-200/80">AI tip of the day</p>
+                        <h3 className="text-lg font-semibold text-white">{dailyTip.title}</h3>
+                      </div>
+                    </div>
+                    <p className="text-sm text-neutral-300 leading-relaxed">{dailyTip.body}</p>
+                    <div className="flex items-center justify-between text-xs text-neutral-300 bg-neutral-800/80 border border-neutral-700/60 rounded-lg px-3 py-2">
+                      <span className="font-semibold text-brand-violet">Acción recomendada</span>
+                      <span className="text-neutral-200 text-right">{dailyTip.action}</span>
+                    </div>
+                    <Button
+                      size="sm"
+                      className="self-start bg-brand-violet hover:bg-brand-violet/80 text-white"
+                      onClick={() => toast.success("Tip aplicado para hoy")}
+                    >
+                      Marcar como aplicado
+                    </Button>
+                  </div>
+                )}
+
+                {featureFlags.weeklyPdfReportsEnabled && (
+                  <div className="ngx-card flex flex-col gap-3">
+                    <div className="flex items-center gap-3">
+                      <DownloadIcon className="w-5 h-5 text-sky-300" />
+                      <div>
+                        <p className="text-xs uppercase tracking-wide text-sky-200/80">Reportes PDF</p>
+                        <h3 className="text-lg font-semibold text-white">Reporte semanal inmediato</h3>
+                      </div>
+                    </div>
+                    <p className="text-sm text-neutral-300 leading-relaxed">
+                      Genera y comparte un PDF semanal con tus métricas clave y el tip de IA destacado para mantener a tu equipo alineado.
+                    </p>
+                    <div className="flex flex-col sm:flex-row gap-2">
+                      <Button size="sm" className="bg-sky-600 hover:bg-sky-500 text-white" onClick={handleQuickWeeklyReportDownload}>
+                        Descargar PDF
+                      </Button>
+                      <Button size="sm" variant="outline" className="border-sky-500 text-sky-200 hover:bg-sky-900/30">
+                        Programado semanalmente
+                      </Button>
+                    </div>
+                    <p className="text-xs text-neutral-400">El PDF incluye resumen de sueño, HRV, pasos y el tip del día.</p>
+                  </div>
+                )}
+
+                {featureFlags.isLiteMode && (
+                  <div className="ngx-card flex flex-col gap-3 border border-amber-500/30 bg-amber-950/30">
+                    <div className="flex items-center gap-3">
+                      <Bot className="w-5 h-5 text-amber-300" />
+                      <div>
+                        <p className="text-xs uppercase tracking-wide text-amber-200/80">Integraciones limitadas</p>
+                        <h3 className="text-lg font-semibold text-white">Pulse Lite enfocado en valor inmediato</h3>
+                      </div>
+                    </div>
+                    <ul className="text-sm text-neutral-200 space-y-1 list-disc list-inside">
+                      <li>Programas avanzados y coaching automatizado ocultos hasta upgrade.</li>
+                      <li>Integraciones externas minimizadas para acelerar la prueba.</li>
+                      <li>{trialStatus.expired ? "Acceso Lite vencido: solo lectura y reportes." : `Te quedan ${trialStatus.daysRemaining} días para decidir.`}</li>
+                    </ul>
+                    <Button size="sm" className="self-start bg-amber-500 hover:bg-amber-400 text-black" onClick={handleUpgradeClick}>
+                      Ir a GENESIS
+                    </Button>
+                  </div>
+                )}
               </div>
 
               {/* Main Content Area - MÁXIMO APROVECHAMIENTO */}
