@@ -8,11 +8,13 @@ import { Skeleton } from "@/components/ui/skeleton";
 import ProgramWizard from "../components/ProgramWizard";
 import ActiveProgramCard from "../components/ActiveProgramCard";
 import { useAppContext } from "../components/AppProvider";
-import { 
-  Wand2, 
-  BookOpen, 
-  Target, 
-  Search, 
+import { featureFlags } from "../config/featureFlags";
+import { getTrialStatus, type TrialStatus } from "../utils/trialUtils";
+import {
+  Wand2,
+  BookOpen,
+  Target,
+  Search,
   Filter,
   Clock,
   Tag,
@@ -65,6 +67,7 @@ const ResourceLibraryPage: React.FC = () => {
   const [minDuration, setMinDuration] = useState<string>("");
   const [maxDuration, setMaxDuration] = useState<string>("");
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [trialStatus, setTrialStatus] = useState<TrialStatus>(() => getTrialStatus(featureFlags.trialLengthDays));
 
   useEffect(() => {
     const loadContent = async () => {
@@ -101,6 +104,10 @@ const ResourceLibraryPage: React.FC = () => {
     loadContent();
   }, [refreshTrigger]);
 
+  useEffect(() => {
+    setTrialStatus(getTrialStatus(featureFlags.trialLengthDays));
+  }, []);
+
   const handleProgramCreated = (program: UserProgram) => {
     console.log('Program created:', program);
     setRefreshTrigger(prev => prev + 1);
@@ -130,6 +137,8 @@ const ResourceLibraryPage: React.FC = () => {
     return categoryMatch && programTagMatch && searchMatch && durationMatch;
   });
 
+  const canAccessAdvancedPrograms = !featureFlags.isLiteMode && !trialStatus.expired;
+
   const clearFilters = () => {
     setSelectedCategory("All Categories");
     setSelectedProgramTag("All Programs");
@@ -153,6 +162,41 @@ const ResourceLibraryPage: React.FC = () => {
             </p>
           </div>
         </header>
+
+        {featureFlags.isLiteMode && (
+          <div className="mb-10">
+            <Card className="bg-amber-900/20 border-amber-500/30 shadow-lg">
+              <CardContent className="p-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div>
+                  <p className="text-amber-200 text-sm font-semibold uppercase tracking-wide">Pulse Lite</p>
+                  <p className="text-lg text-white font-bold mt-1">
+                    {trialStatus.expired
+                      ? "Tu periodo Lite finalizó. Desbloquea GENESIS para seguir creando programas avanzados."
+                      : `Quedan ${trialStatus.daysRemaining} días de acceso limitado en Pulse Lite.`}
+                  </p>
+                  <p className="text-sm text-neutral-200 mt-1">
+                    Los programas avanzados e integraciones premium están ocultos en esta versión para simplificar la experiencia.
+                  </p>
+                </div>
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <Button
+                    onClick={() => window.open(featureFlags.genesisUpgradeUrl, '_blank')}
+                    className="bg-amber-500 hover:bg-amber-400 text-black"
+                  >
+                    Upgrade a GENESIS
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="border-amber-400 text-amber-200 hover:bg-amber-900/50"
+                    onClick={() => navigate('/dashboard-page')}
+                  >
+                    Revisar estado
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
 
         {/* Content Library Section - MOVED UP */}
         <section className="mb-16">
@@ -403,92 +447,124 @@ const ResourceLibraryPage: React.FC = () => {
           </div>
 
           {/* Active Program Display */}
-          {currentUserId && (
+          {currentUserId && canAccessAdvancedPrograms && (
             <div className="mb-12">
-              <ActiveProgramCard 
-                key={refreshTrigger} 
-                onProgramUpdate={handleProgramUpdate} 
+              <ActiveProgramCard
+                key={refreshTrigger}
+                onProgramUpdate={handleProgramUpdate}
               />
             </div>
           )}
 
           {/* Program Creation Options */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-            {/* Fitness Program Card */}
-            <Card className="bg-gradient-to-br from-brand-violet/10 to-brand-violet/5 border-brand-violet/30 hover:border-brand-violet/50 transition-all duration-200 group">
-              <CardContent className="p-8 text-center">
-                <div className="w-20 h-20 bg-brand-violet/20 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-200">
-                  <Dumbbell className="w-10 h-10 text-brand-violet" />
-                </div>
-                <h3 className="text-xl font-semibold text-white mb-3">
-                  Programa de Fitness
-                </h3>
-                <p className="text-sm text-neutral-400 mb-6">
-                  Entrenamientos personalizados, planes de fuerza, cardio y acondicionamiento físico adaptados a tu nivel
-                </p>
-                
-                {currentUserId ? (
-                  <ProgramWizard 
-                    programType="fitness"
-                    onProgramCreated={handleProgramCreated}
-                    triggerButton={
-                      <Button className="bg-brand-violet hover:bg-brand-violet/80 text-white w-full">
-                        <Wand2 size={16} className="mr-2" />
-                        Crear Programa Fitness
-                      </Button>
-                    }
-                  />
-                ) : (
-                  <Button 
-                    onClick={() => navigate('/login')}
-                    variant="outline" 
-                    className="border-brand-violet text-brand-violet hover:bg-brand-violet/10 w-full"
-                  >
-                    Iniciar Sesión
-                  </Button>
-                )}
-              </CardContent>
-            </Card>
+          {canAccessAdvancedPrograms ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+              {/* Fitness Program Card */}
+              <Card className="bg-gradient-to-br from-brand-violet/10 to-brand-violet/5 border-brand-violet/30 hover:border-brand-violet/50 transition-all duration-200 group">
+                <CardContent className="p-8 text-center">
+                  <div className="w-20 h-20 bg-brand-violet/20 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-200">
+                    <Dumbbell className="w-10 h-10 text-brand-violet" />
+                  </div>
+                  <h3 className="text-xl font-semibold text-white mb-3">
+                    Programa de Fitness
+                  </h3>
+                  <p className="text-sm text-neutral-400 mb-6">
+                    Entrenamientos personalizados, planes de fuerza, cardio y acondicionamiento físico adaptados a tu nivel
+                  </p>
 
-            {/* Nutrition Program Card */}
-            <Card className="bg-gradient-to-br from-emerald-500/10 to-emerald-500/5 border-emerald-500/30 hover:border-emerald-500/50 transition-all duration-200 group">
-              <CardContent className="p-8 text-center">
-                <div className="w-20 h-20 bg-emerald-500/20 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-200">
-                  <Apple className="w-10 h-10 text-emerald-400" />
+                  {currentUserId ? (
+                    <ProgramWizard
+                      programType="fitness"
+                      onProgramCreated={handleProgramCreated}
+                      triggerButton={
+                        <Button className="bg-brand-violet hover:bg-brand-violet/80 text-white w-full">
+                          <Wand2 size={16} className="mr-2" />
+                          Crear Programa Fitness
+                        </Button>
+                      }
+                    />
+                  ) : (
+                    <Button
+                      onClick={() => navigate('/login')}
+                      variant="outline"
+                      className="border-brand-violet text-brand-violet hover:bg-brand-violet/10 w-full"
+                    >
+                      Iniciar Sesión
+                    </Button>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Nutrition Program Card */}
+              <Card className="bg-gradient-to-br from-emerald-500/10 to-emerald-500/5 border-emerald-500/30 hover:border-emerald-500/50 transition-all duration-200 group">
+                <CardContent className="p-8 text-center">
+                  <div className="w-20 h-20 bg-emerald-500/20 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-200">
+                    <Apple className="w-10 h-10 text-emerald-400" />
+                  </div>
+                  <h3 className="text-xl font-semibold text-white mb-3">
+                    Programa de Nutrición
+                  </h3>
+                  <p className="text-sm text-neutral-400 mb-6">
+                    Planes alimentarios inteligentes, recetas personalizadas y estrategias nutricionales para tus objetivos
+                  </p>
+
+                  {currentUserId ? (
+                    <ProgramWizard
+                      programType="nutrition"
+                      onProgramCreated={handleProgramCreated}
+                      triggerButton={
+                        <Button className="bg-emerald-500 hover:bg-emerald-600 text-white w-full">
+                          <Wand2 size={16} className="mr-2" />
+                          Crear Programa Nutrición
+                        </Button>
+                      }
+                    />
+                  ) : (
+                    <Button
+                      onClick={() => navigate('/login')}
+                      variant="outline"
+                      className="border-emerald-500 text-emerald-400 hover:bg-emerald-500/10 w-full"
+                    >
+                      Iniciar Sesión
+                    </Button>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          ) : (
+            <Card className="bg-neutral-800/60 border border-neutral-700/70 shadow-inner max-w-4xl mx-auto">
+              <CardContent className="p-8 text-center space-y-4">
+                <div className="flex items-center justify-center gap-2 text-brand-violet">
+                  <Target className="w-5 h-5" />
+                  <p className="text-sm font-semibold uppercase tracking-wide">Programas avanzados ocultos en Pulse Lite</p>
                 </div>
-                <h3 className="text-xl font-semibold text-white mb-3">
-                  Programa de Nutrición
-                </h3>
-                <p className="text-sm text-neutral-400 mb-6">
-                  Planes alimentarios inteligentes, recetas personalizadas y estrategias nutricionales para tus objetivos
+                <h3 className="text-xl font-semibold text-white">Desbloquea NGX GENESIS</h3>
+                <p className="text-neutral-300 text-sm max-w-2xl mx-auto">
+                  {trialStatus.expired
+                    ? "Tu prueba de 30 días terminó. Los generadores de programas y las integraciones premium están bloqueados hasta que hagas upgrade."
+                    : `Te quedan ${trialStatus.daysRemaining} días para probar la experiencia Lite. Los programas avanzados e integraciones con coach se reservan para GENESIS.`}
                 </p>
-                
-                {currentUserId ? (
-                  <ProgramWizard 
-                    programType="nutrition"
-                    onProgramCreated={handleProgramCreated}
-                    triggerButton={
-                      <Button className="bg-emerald-500 hover:bg-emerald-600 text-white w-full">
-                        <Wand2 size={16} className="mr-2" />
-                        Crear Programa Nutrición
-                      </Button>
-                    }
-                  />
-                ) : (
-                  <Button 
-                    onClick={() => navigate('/login')}
-                    variant="outline" 
-                    className="border-emerald-500 text-emerald-400 hover:bg-emerald-500/10 w-full"
+                <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                  <Button
+                    className="bg-brand-violet hover:bg-brand-violet/80 text-white"
+                    onClick={() => window.open(featureFlags.genesisUpgradeUrl, '_blank')}
                   >
-                    Iniciar Sesión
+                    Upgrade a GENESIS
                   </Button>
-                )}
+                  <Button
+                    variant="outline"
+                    className="border-neutral-600 text-neutral-200 hover:bg-neutral-800"
+                    onClick={() => window.open(featureFlags.genesisUpgradeUrl, '_blank')}
+                  >
+                    Hablar con un asesor
+                  </Button>
+                </div>
               </CardContent>
             </Card>
-          </div>
+          )}
 
           {/* Help Text for Non-logged Users */}
-          {!currentUserId && (
+          {!currentUserId && canAccessAdvancedPrograms && (
             <div className="text-center mt-8">
               <p className="text-neutral-500 text-sm">
                 Inicia sesión para acceder a programas personalizados con IA y hacer seguimiento de tu progreso
