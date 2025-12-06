@@ -14,12 +14,10 @@ import { Calendar as CalendarIcon, ChevronLeft, PlusCircle, Trash2 } from "lucid
 import React, { useState, useEffect } from "react"; // Added useEffect
 import { useNavigate } from "react-router-dom";
 import { Toaster, toast } from "sonner";
-import { v4 as uuidv4 } from 'uuid';
 import { supabase, fetchWellnessDataForDashboard, WellnessData } from "../utils/supabaseClient"; // Added Supabase client and new function
 import { useAppContext } from "../components/AppProvider"; // Added AppContext
 import { ResponsiveContainer, LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Cell } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-
 
 // Definiciones de Tipos e Interfaces
 export type ActivityType = 

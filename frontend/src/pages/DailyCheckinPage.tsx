@@ -14,7 +14,6 @@ import { es } from "date-fns/locale";
 import { Calendar as CalendarIcon, ChevronLeft, PlusCircle, Trash2, Save } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Toaster, toast } from "sonner";
-import { v4 as uuidv4 } from 'uuid';
 import { supabase } from "../utils/supabaseClient";
 import { useAppContext } from "../components/AppProvider";
 
@@ -55,6 +54,8 @@ const ZONAS_CORPORALES = [
   "Gemelo Izquierdo", "Gemelo Derecho", "Gemelos (Ambos)",
   "Otro (Especificar)"
 ];
+
+const generateId = () => crypto.randomUUID();
 
 const DailyCheckinPageContent: React.FC = () => {
   const navigate = useNavigate();
@@ -129,7 +130,7 @@ const DailyCheckinPageContent: React.FC = () => {
           } else if (painItemsData) {
             setMusclePainItems(painItemsData.map(item => ({
               ...item,
-              frontend_id: uuidv4(), // Asignamos un frontend_id para manejo en UI
+              frontend_id: generateId(), // Asignamos un frontend_id para manejo en UI
               intensidad_dolor: item.intensidad_dolor ?? 1 // Asegurar valor por defecto
             })));
           }
@@ -151,7 +152,7 @@ const DailyCheckinPageContent: React.FC = () => {
   const handleAddMusclePainItem = () => {
     setMusclePainItems([
       ...musclePainItems,
-      { frontend_id: uuidv4(), zona_corporal: "", intensidad_dolor: 1 }
+      { frontend_id: generateId(), zona_corporal: "", intensidad_dolor: 1 }
     ]);
   };
 
