@@ -4,20 +4,11 @@ import os
 from typing import List, Optional, Dict, Any
 
 # Third-party imports
-from fastapi import APIRouter, Depends, HTTPException, Header, Request, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, Field, HttpUrl
 from supabase import create_client, Client
+from app.auth import AuthorizedUser
 from app.demo_data import DemoDataset, get_demo_dataset, is_demo_mode
-
-# Attempt to import Supabase/GoTrue specific error
-try:
-    from gotrue.errors import GoTrueApiError
-    logging.getLogger(__name__).debug("Successfully imported GoTrueApiError.")
-except ImportError:
-    GoTrueApiError = None  # Fallback if not found
-    logging.getLogger(__name__).debug(
-        "Could not import GoTrueApiError directly, using generic Exception for Supabase API errors."
-    )
 
 logger = logging.getLogger(__name__)
 
@@ -71,95 +62,6 @@ class SyncResponse(BaseModel):
     category_samples_imported: int = 0
     workouts_imported: int = 0
 
-# --- FastAPI Authentication Dependency ---
-async def get_current_user_data(request: Request, authorization: Optional[str] = Header(None)) -> Dict[str, Any]:
-    logger.debug("get_current_user_data invoked")
-    logger.debug("Attempting to get Supabase client")
-    if is_demo_mode():
-        logger.info("Demo mode active; returning mock user for health data")
-        return {
-            "id": "demo-user-1",
-            "email": "demo.user@nexus.pulse",
-            "name": "Demo User",
-        }
-
-    supabase_url = os.environ.get("SUPABASE_URL")
-    supabase_anon_key = os.environ.get("SUPABASE_ANON_KEY")
-
-    if not supabase_url or not supabase_anon_key:
-        logger.error("Supabase URL or Anon Key is missing from secrets")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Supabase configuration missing",
-        )
-    logger.debug("Supabase client URL configured")
-
-    try:
-        logger.debug("Initializing Supabase client")
-        supabase: Client = create_client(supabase_url, supabase_anon_key)
-        logger.debug("Supabase client initialized")
-    except Exception as e:
-        logger.error("Error initializing Supabase client: %s", e)
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error initializing Supabase client: {e}",
-        ) from e
-
-    if not authorization:
-        logger.warning("Authorization header missing from request")
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Authorization header missing",
-        )
-    logger.debug("Authorization header received")
-
-    scheme, _, token_value = authorization.partition(" ")
-    if scheme.lower() != "bearer" or not token_value:
-        logger.warning("Invalid authorization scheme or token missing. Scheme: %s", scheme)
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid authorization scheme or token missing",
-        )
-    logger.debug("Bearer token received")
-
-    try:
-        logger.debug("Attempting to get user with provided token")
-        user_response = supabase.auth.get_user(jwt=token_value)
-        logger.debug("Supabase get_user response received")
-        
-        if user_response and user_response.user:
-            logger.debug("User successfully authenticated: %s", user_response.user.id)
-            return user_response.user.model_dump() # FastAPI will convert this to dict
-        else:
-            logger.warning("User not found or invalid token based on Supabase response")
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED, detail="No access for you. (User not found/invalid token)"
-            )
-    except GoTrueApiError as e_gotrue: # Specific catch for GoTrueApiError if it was imported
-        error_message = str(e_gotrue)
-        if hasattr(e_gotrue, 'message') and e_gotrue.message: 
-            error_message = e_gotrue.message
-        status_code_from_error = e_gotrue.status if hasattr(e_gotrue, 'status') else 401
-        logger.error(
-            "GoTrueApiError: Status %s - Message: %s",
-            status_code_from_error,
-            error_message,
-        )
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, 
-            detail=f"No access for you. (Auth Error: {error_message})"
-        ) from e_gotrue
-    except Exception as e_generic: # Generic catch for other errors
-        logger.exception(
-            "Unexpected error during token validation: %s - %s",
-            type(e_generic).__name__,
-            e_generic,
-        )
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, 
-            detail=f"No access for you. (Unexpected Error: {type(e_generic).__name__})"
-        ) from e_generic
-
 # --- Router Setup ---
 router = APIRouter(prefix="/api/v1/healthkit", tags=["HealthKit"])
 
@@ -167,11 +69,11 @@ router = APIRouter(prefix="/api/v1/healthkit", tags=["HealthKit"])
 @router.post("/sync", response_model=SyncResponse) # Path prefix is in router
 async def sync_health_kit_data(
     request_data: HealthKitSyncRequest,
-    current_user: Dict[str, Any] = Depends(get_current_user_data) # Use the original name
+    current_user: AuthorizedUser = Depends(),
 ):
     if is_demo_mode():
         logger.info("Demo mode active; returning mock sync response")
-        dataset: DemoDataset = get_demo_dataset().for_user(current_user.get("id"))
+        dataset: DemoDataset = get_demo_dataset().for_user(current_user.sub)
         return SyncResponse(
             message="Demo data accepted",
             quantity_samples_imported=len(dataset.health_metrics),
@@ -179,7 +81,7 @@ async def sync_health_kit_data(
             workouts_imported=0,
         )
 
-    user_id = current_user.get("id")
+    user_id = current_user.sub
     if not user_id:
         logger.error("User ID not found in token after auth dependency")
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="User ID not available")
