@@ -9,11 +9,4 @@ Usage:
         return example_read_data_for_user(userId=user.sub)
 """
 
-from typing import Annotated
-
-from fastapi import Depends
-
-from databutton_app.mw.auth_mw import get_authorized_user, User
-
-
-AuthorizedUser = Annotated[User, Depends(get_authorized_user)]
+from app.utils.auth import AuthorizedUser, User

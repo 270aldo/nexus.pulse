@@ -1,20 +1,7 @@
 import json
 import importlib.util
 from pathlib import Path
-import sys
-import types
-
 import pytest
-
-# Provide stub for databutton_app dependency so main.py can be imported
-sys.modules["databutton_app"] = types.ModuleType("databutton_app")
-sys.modules["databutton_app.mw"] = types.ModuleType("databutton_app.mw")
-stub = types.ModuleType("databutton_app.mw.auth_mw")
-stub.AuthConfig = object
-def _dummy():
-    pass
-stub.get_authorized_user = _dummy
-sys.modules["databutton_app.mw.auth_mw"] = stub
 
 # Dynamically import backend/main.py as module 'backend_main'
 MODULE_PATH = Path(__file__).resolve().parents[1] / "backend" / "main.py"
@@ -57,4 +44,3 @@ def test_is_auth_disabled_missing():
 def test_is_auth_disabled_valid():
     cfg = {"routers": {"api": {"disableAuth": True}}}
     assert backend_main.is_auth_disabled(cfg, "api") is True
-
