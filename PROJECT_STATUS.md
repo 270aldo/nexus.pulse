@@ -65,6 +65,18 @@
 
 ---
 
+## 📈 Cobertura de Tests (Baseline + Objetivo Incremental)
+
+**Baseline registrado**: ~5% de cobertura total (estimación previa, pendiente de reporte detallado).
+
+**Objetivo incremental**: **+10 puntos porcentuales** de cobertura total en 1 semana (antes del **27 Sept, 2025**).
+
+**Cómo medir y registrar**:
+- Backend: `pytest --cov=backend --cov-report=term-missing`
+- Frontend: `yarn test:coverage`
+
+---
+
 ## 🔄 Trabajo en Progreso
 
 ### Frontend (70% completado)

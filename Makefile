@@ -62,8 +62,13 @@ seed-demo-clean:
 	@echo "🧹 Cleaning and re-seeding demo data..."
 	cd scripts && python seed-demo-data.py --days 30 --clean
 
-.PHONY: test build check-env lint-frontend type-check seed-demo seed-demo-clean
-test:
+.PHONY: test test-backend test-frontend build check-env lint-frontend type-check seed-demo seed-demo-clean
+test-backend:
 	pytest
+
+test-frontend:
+	cd frontend && yarn test
+
+test: test-backend test-frontend
 
 .DEFAULT_GOAL := install

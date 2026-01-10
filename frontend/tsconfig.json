@@ -21,6 +21,9 @@
     "noEmit": true,
     "jsx": "react-jsx",
     "baseUrl": ".",
+    "types": [
+      "vitest/globals"
+    ],
     "paths": {
       "brain": [
         "./src/brain"
