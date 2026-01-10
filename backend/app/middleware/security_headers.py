@@ -107,8 +107,10 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         response.headers["Expires"] = "0"
         
         # Remove server information
-        response.headers.pop("Server", None)
-        response.headers.pop("X-Powered-By", None)
+        if "Server" in response.headers:
+            del response.headers["Server"]
+        if "X-Powered-By" in response.headers:
+            del response.headers["X-Powered-By"]
         
         # Custom headers
         for header, value in self.custom_headers.items():

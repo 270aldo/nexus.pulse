@@ -1,8 +1,28 @@
 {
   "routers": {
+    "auth": {
+      "name": "auth",
+      "version": "2025-09-20",
+      "disableAuth": true
+    },
+    "biometrics": {
+      "name": "biometrics",
+      "version": "2025-09-20",
+      "disableAuth": false
+    },
     "health_data": {
       "name": "health_data",
       "version": "2025-05-18T00:45:21",
+      "disableAuth": false
+    },
+    "nutrition": {
+      "name": "nutrition",
+      "version": "2025-09-20",
+      "disableAuth": false
+    },
+    "training": {
+      "name": "training",
+      "version": "2025-09-20",
       "disableAuth": false
     },
     "ai_coach_messages_api": {

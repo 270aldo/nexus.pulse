@@ -23,7 +23,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-from databutton_app.mw.auth_mw import AuthConfig, get_authorized_user
+from app.middleware.auth_mw import AuthConfig, get_authorized_user
 
 
 def get_router_config() -> dict:
