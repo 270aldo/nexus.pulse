@@ -44,6 +44,7 @@ interface ErrorLogEntry {
 class ApiClient {
   private baseUrl: string;
   private errorLogs: ErrorLogEntry[] = [];
+  private aiTimeoutMs = 8000;
 
   constructor() {
     this.baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
@@ -133,6 +134,89 @@ class ApiClient {
     return headers;
   }
 
+  private async fetchWithTimeout(input: RequestInfo, init: RequestInit, timeoutMs: number): Promise<Response> {
+    const controller = new AbortController();
+    const timeoutId = window.setTimeout(() => controller.abort(), timeoutMs);
+
+    try {
+      return await fetch(input, { ...init, signal: controller.signal });
+    } finally {
+      window.clearTimeout(timeoutId);
+    }
+  }
+
+  private async fallbackToMock<T>(
+    endpoint: string,
+    data: any,
+    traceId: string,
+    fallbackReason?: string
+  ): Promise<ApiResponse<T>> {
+    if (import.meta.env.DEV) {
+      console.warn('🧪 Using mock AI response due to backend issue:', fallbackReason || endpoint);
+    }
+
+    try {
+      const mockResponse = await mockAIAPICall(endpoint, data);
+      if (mockResponse.success) {
+        return {
+          success: true,
+          data: mockResponse.data as T,
+          status: 200,
+          traceId
+        };
+      }
+
+      const errorMessage = mockResponse.error || 'Error en el servicio de IA. Inténtalo de nuevo.';
+      this.showUserFriendlyError(undefined, errorMessage);
+      return {
+        success: false,
+        error: errorMessage,
+        traceId,
+        data: undefined
+      };
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Error en el servicio de IA. Inténtalo de nuevo.';
+      this.showUserFriendlyError(undefined, errorMessage);
+      return {
+        success: false,
+        error: errorMessage,
+        traceId,
+        data: undefined
+      };
+    }
+  }
+
+  private async requestAiEndpoint<T>(method: 'GET' | 'POST', endpoint: string, data?: any): Promise<ApiResponse<T>> {
+    const fullUrl = `${this.baseUrl}${endpoint}`;
+    const traceId = this.generateTraceId();
+
+    try {
+      const headers = await this.getAuthHeaders();
+      headers['X-Trace-ID'] = traceId;
+
+      const response = await this.fetchWithTimeout(
+        fullUrl,
+        {
+          method,
+          headers,
+          body: data ? JSON.stringify(data) : undefined,
+        },
+        this.aiTimeoutMs
+      );
+
+      if (response.ok || response.status < 500) {
+        return this.handleResponse<T>(response, method, fullUrl);
+      }
+
+      this.logError(method, fullUrl, `Backend unavailable (HTTP ${response.status})`, response.status, traceId);
+      return this.fallbackToMock<T>(endpoint, data, traceId, `HTTP ${response.status}`);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Error de red';
+      this.logError(method, fullUrl, errorMessage, undefined, traceId);
+      return this.fallbackToMock<T>(endpoint, data, traceId, errorMessage);
+    }
+  }
+
   private async handleResponse<T>(response: Response, method: string, url: string): Promise<ApiResponse<T>> {
     const traceId = this.generateTraceId();
     
@@ -198,6 +282,10 @@ class ApiClient {
   }
 
   async get<T = any>(endpoint: string): Promise<ApiResponse<T>> {
+    if (endpoint.startsWith('/api/ai/')) {
+      return this.requestAiEndpoint<T>('GET', endpoint);
+    }
+
     const fullUrl = `${this.baseUrl}${endpoint}`;
     const traceId = this.generateTraceId();
     
@@ -226,17 +314,9 @@ class ApiClient {
   }
 
   async post<T = any>(endpoint: string, data?: any): Promise<ApiResponse<T>> {
-    // Check if this is an AI endpoint and use mock service if backend isn't available
+    // Check if this is an AI endpoint and fallback to mock service if backend isn't available
     if (endpoint.startsWith('/api/ai/')) {
-      try {
-        return await mockAIAPICall(endpoint, data) as ApiResponse<T>;
-      } catch (error) {
-        console.error('Mock AI API error:', error);
-        return {
-          success: false,
-          error: 'Error en el servicio de IA. Inténtalo de nuevo.',
-        };
-      }
+      return this.requestAiEndpoint<T>('POST', endpoint, data);
     }
 
     const fullUrl = `${this.baseUrl}${endpoint}`;

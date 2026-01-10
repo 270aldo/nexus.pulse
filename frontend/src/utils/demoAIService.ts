@@ -38,6 +38,18 @@ interface AIGeneratedProgram {
   ai_rationale: string;
 }
 
+interface AICoachMessage {
+  id: string;
+  user_id: string;
+  title?: string | null;
+  body: string;
+  message_type: 'ALERT' | 'INFO' | 'RECOMMENDATION' | 'PRAISE' | 'MOTIVATION' | 'WARNING' | 'ERROR';
+  urgency: 'LOW' | 'MEDIUM' | 'HIGH';
+  deep_link?: string | null;
+  created_at: string;
+  read_at?: string | null;
+}
+
 // Program name generators
 const FITNESS_PROGRAM_NAMES = [
   "Transformación Elite",
@@ -198,6 +210,42 @@ const generateWeeklyStructure = (
   }
   
   return structure;
+};
+
+const generateCoachMessages = (): AICoachMessage[] => {
+  const now = Date.now();
+
+  const templates = [
+    {
+      title: 'Recuperación priorizada',
+      body: 'Tu HRV ha bajado ligeramente. Considera una sesión de movilidad suave hoy.',
+      message_type: 'RECOMMENDATION' as const,
+      urgency: 'MEDIUM' as const,
+      deep_link: '/wellness-log-page'
+    },
+    {
+      title: 'Objetivo semanal en marcha',
+      body: 'Llevas 3 sesiones registradas esta semana. Te falta 1 para alcanzar tu meta.',
+      message_type: 'MOTIVATION' as const,
+      urgency: 'LOW' as const,
+      deep_link: '/training-log-page'
+    },
+    {
+      title: 'Nutrición consistente',
+      body: 'Buen trabajo manteniendo tu ingesta de proteína durante los últimos días.',
+      message_type: 'PRAISE' as const,
+      urgency: 'LOW' as const,
+      deep_link: '/nutrition-log-page'
+    }
+  ];
+
+  return templates.map((template, index) => ({
+    id: `demo-coach-${index + 1}`,
+    user_id: 'demo-user',
+    created_at: new Date(now - index * 2 * 60 * 60 * 1000).toISOString(),
+    read_at: index === 2 ? new Date(now - index * 2 * 60 * 60 * 1000 + 20 * 60 * 1000).toISOString() : null,
+    ...template
+  }));
 };
 
 const generateSuccessMetrics = (goals: ProgramGoal[], preferences: Record<string, string>, programType: 'fitness' | 'nutrition'): string[] => {
@@ -367,6 +415,10 @@ export const mockAIAPICall = async (endpoint: string, data: any): Promise<{ succ
     if (endpoint === '/api/ai/generate-program') {
       const result = await generateProgramWithAI(data);
       return { success: true, data: result };
+    }
+
+    if (endpoint === '/api/ai/coach-messages') {
+      return { success: true, data: generateCoachMessages() };
     }
     
     throw new Error('Unknown endpoint');
