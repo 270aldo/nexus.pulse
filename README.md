@@ -119,6 +119,17 @@ cp frontend/.env.example frontend/.env
 # - Other service credentials
 ```
 
+#### ✅ Minimal Environment Variables
+Backend (`backend/.env`):
+- `SUPABASE_URL`
+- `SUPABASE_ANON_KEY`
+- `SUPABASE_SERVICE_ROLE_KEY` (required for service operations)
+
+Frontend (`frontend/.env`):
+- `VITE_SUPABASE_URL`
+- `VITE_SUPABASE_ANON_KEY`
+- `VITE_API_BASE_URL` (defaults to `http://localhost:8000` for local dev)
+
 ### **3. Start Development Servers**
 ```bash
 # Start backend (Terminal 1)
@@ -132,6 +143,22 @@ make run-frontend
 - **Frontend**: http://localhost:5173
 - **Backend API**: http://localhost:8000/docs
 - **Database**: Configure with your Supabase credentials
+
+---
+
+## 🐳 **Docker Quick Start (Clean Boot)**
+
+```bash
+# Create env files from templates if needed
+cp backend/.env.example backend/.env
+cp frontend/.env.example frontend/.env
+
+# Start everything with a single command
+docker compose up --build
+```
+
+- Frontend: http://localhost:5173
+- Backend: http://localhost:8000/docs
 
 ---
 

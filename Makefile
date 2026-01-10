@@ -50,6 +50,10 @@ lint-frontend:
 type-check:
 	cd frontend && npm run type-check
 
+lint: lint-frontend
+
+check: lint type-check test
+
 seed-demo:
 	@echo "🌱 Seeding demo data for NGX Pulse..."
 	@if [ ! -f backend/.env ]; then \
@@ -62,7 +66,7 @@ seed-demo-clean:
 	@echo "🧹 Cleaning and re-seeding demo data..."
 	cd scripts && python seed-demo-data.py --days 30 --clean
 
-.PHONY: test build check-env lint-frontend type-check seed-demo seed-demo-clean
+.PHONY: test build check-env lint-frontend type-check lint check seed-demo seed-demo-clean
 test:
 	pytest
 
