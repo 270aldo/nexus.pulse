@@ -160,7 +160,15 @@ class RateLimitingMiddleware(BaseHTTPMiddleware):
                 limit=500,
                 window_seconds=3600,  # 500 requests per hour
                 scope="user",
-                paths=["/api/health_data", "/api/nutrition", "/api/training"]
+                paths=[
+                    "/api/health_data",
+                    "/api/nutrition",
+                    "/api/training",
+                    "/routes/api/v1/healthkit",
+                    "/routes/biometrics",
+                    "/routes/nutrition",
+                    "/routes/training",
+                ]
             ),
             
             # Burst protection (short window)
