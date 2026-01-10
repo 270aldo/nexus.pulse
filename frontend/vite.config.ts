@@ -99,6 +99,12 @@ export default defineConfig(({ command, mode }) => {
         },
       },
     },
+    test: {
+      css: true,
+      environment: "jsdom",
+      globals: true,
+      setupFiles: "./src/test/setup.tsx",
+    },
     optimizeDeps: {
       include: [
         "react",
